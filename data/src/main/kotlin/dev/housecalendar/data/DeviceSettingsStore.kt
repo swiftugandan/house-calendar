@@ -1,6 +1,7 @@
 package dev.housecalendar.data
 
 import android.content.Context
+import dev.housecalendar.contracts.DeviceRole
 import dev.housecalendar.contracts.InstantMs
 import dev.housecalendar.contracts.LocalTimeSerializer
 import kotlinx.coroutines.Dispatchers
@@ -22,6 +23,13 @@ import java.time.LocalTime
 @Serializable
 public enum class ReminderChoice { MINE, EVERYONE, NONE }
 
+/**
+ * What a joining device chose before it could record anything: it has the family key but none of the
+ * family's ops until its first sync, and records its `device.upsert` then (SPEC FR-5).
+ */
+@Serializable
+public data class PendingJoin(val name: String, val role: DeviceRole)
+
 /** The view a display returns to when idle (SPEC FR-31). */
 @Serializable
 public enum class DisplayHome { WEEK, TODAY, MONTH }
@@ -42,6 +50,8 @@ public data class DeviceSettings(
     val lastReminderFired: InstantMs? = null,
     /** Screen pinning is offered once (SAD §3.8). */
     val pinningOffered: Boolean = false,
+    /** Set while this device has joined by pairing code but not yet received the family (SAD §3.8 "Pairing"). */
+    val pendingJoin: PendingJoin? = null,
 ) {
     public companion object {
         public val DEFAULT_DAY_STARTS: LocalTime = LocalTime.of(6, 30)

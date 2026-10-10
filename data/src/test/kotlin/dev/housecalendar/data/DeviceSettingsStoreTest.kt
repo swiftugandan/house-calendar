@@ -1,5 +1,6 @@
 package dev.housecalendar.data
 
+import dev.housecalendar.contracts.DeviceRole
 import dev.housecalendar.contracts.InstantMs
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -50,6 +51,16 @@ class DeviceSettingsStoreTest {
         assertEquals(DeviceSettings(), store.current())
         store.update { it.copy(sizePercent = 120) }
         assertEquals(120, DeviceSettingsStore(folder.root).current().sizePercent)
+    }
+
+    @Test
+    fun `a joining device keeps its chosen name and role until its first sync`() = runTest {
+        val store = DeviceSettingsStore(folder.root)
+        assertEquals(null, store.current().pendingJoin)
+        store.update { it.copy(pendingJoin = PendingJoin("Kitchen", DeviceRole.Display)) }
+        assertEquals(PendingJoin("Kitchen", DeviceRole.Display), DeviceSettingsStore(folder.root).current().pendingJoin)
+        store.update { it.copy(pendingJoin = null) }
+        assertEquals(null, DeviceSettingsStore(folder.root).current().pendingJoin)
     }
 
     @Test
