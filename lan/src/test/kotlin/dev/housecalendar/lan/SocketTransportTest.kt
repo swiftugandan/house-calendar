@@ -28,6 +28,17 @@ class SocketTransportTest {
         }
     }
 
+    @Test(timeout = HANG_LIMIT_MS)
+    fun `a receive that times out returns promptly and closes the connection, even though socket reads block`() = runBlocking {
+        val (a, _) = connectedPair()
+        val started = System.nanoTime()
+        val frame = kotlinx.coroutines.withTimeoutOrNull(RECEIVE_TIMEOUT_MS) { a.receive() }
+        val elapsedMs = (System.nanoTime() - started) / 1_000_000
+        assertNull(frame)
+        assertTrue("receive took $elapsedMs ms after a $RECEIVE_TIMEOUT_MS ms timeout", elapsedMs < RECEIVE_TIMEOUT_MS + PROMPT_MS)
+        assertNull(a.receive())
+    }
+
     @Test
     fun `frames of any size up to the limit arrive whole and in order`() = runBlocking {
         val (a, b) = connectedPair()
@@ -93,5 +104,8 @@ class SocketTransportTest {
 
     private companion object {
         const val CONNECT_TIMEOUT_MS = 2_000
+        const val RECEIVE_TIMEOUT_MS = 300L
+        const val PROMPT_MS = 2_000L
+        const val HANG_LIMIT_MS = 10_000L
     }
 }
