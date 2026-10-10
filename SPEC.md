@@ -262,9 +262,60 @@ Families coordinate their week on a paper calendar in the kitchen: who has what 
 - **FR-47:** The op log MUST be eligible for Android Auto Backup. The device identity and the wrapped family key MUST NOT be (FR-3) [R4].
 - **FR-48:** A person MUST be able to export the whole op log to a file encrypted with a passphrase, and import it on a new device. Imported ops merge exactly like a sync.
 
+### Adding from other apps
+
+Added 2026-10-10 at the user's request: activities can come from other apps on the phone. Everything arriving from another app becomes a **draft**: the add sheet, filled in as far as the source allows. A person confirms it, usually by adding who and taking, which no other app knows. Nothing from another app is ever recorded without that confirmation.
+
+- **FR-49:** The app MUST accept Android's standard calendar insert intent: `ACTION_INSERT` or `ACTION_EDIT` on `content://com.android.calendar/events` [R21]. That is what an "Add to calendar" button in another app sends, so House Calendar appears in that app's chooser. The draft takes:
+  - the title (`Events.TITLE`)
+  - the begin and end times (`EXTRA_EVENT_BEGIN_TIME` and `EXTRA_EVENT_END_TIME`), converted from epoch milliseconds to family time (FR-53)
+  - all day (`EXTRA_EVENT_ALL_DAY`)
+  - the place (`Events.EVENT_LOCATION`)
+  - the notes (`Events.DESCRIPTION`)
+  - the repeat rule (`Events.RRULE`), when it maps onto FR-20 (FR-52).
+
+  No calendar permission is needed for this [R21].
+- **FR-50:** The app MUST open iCalendar files (`text/calendar`, `.ics`) [R2], whether viewed from a file or email or shared to it.
+  - **One event:** it opens as a draft.
+  - **Several events:** they open as a review list with every event selected, which the person can untick, and one "Add N events" action.
+  - **Holidays:** when every selected event is all day, the list offers **Add as holidays** instead (FR-28). This is how a school's term-dates file becomes the family's holidays in one step.
+
+  The file reader MUST:
+  - support `VEVENT` with `UID`, `SUMMARY`, `DTSTART` and `DTEND` or `DURATION` (as `DATE`, UTC, `TZID` or floating `DATE-TIME`), `LOCATION`, `DESCRIPTION`, `RRULE` and `EXDATE`
+  - ignore every other component and property
+  - unfold lines and unescape text as RFC 5545 §3.1 and §3.3.11 require [R2].
+- **FR-51:** Text shared to the app (`ACTION_SEND`, `text/plain`) MUST open a draft with:
+  - the first line as the title (truncated to 80 characters)
+  - the whole text in notes.
+
+  The app SHOULD also detect one date and time in the text ("Sat 3pm", "tomorrow at 10:30", "12 Oct") relative to the moment of sharing, and fill the slot with it. Detection is English-only in v1, and the person sees and can change what was detected.
+- **FR-52:** An incoming repeat rule that maps exactly onto FR-20 is kept, with `COUNT` converted to `until` as in FR-22. One that doesn't map:
+  - becomes a one-off event on its first date
+  - gets the line "Repeats in a way House Calendar can't show: {rule}" in its notes.
+
+  `EXDATE` values become "only this one" deletions (FR-16). `RECURRENCE-ID` overrides are skipped, and the review list says how many were skipped.
+- **FR-53:** Incoming times are converted to family time:
+  - a UTC or `TZID` time through its instant (FR-27)
+  - a floating time or a `DATE` as written
+  - an all-day insert intent by reading its begin time's date in UTC (Android's convention for all-day events [R21]).
+
+  A converted time whose minutes don't fall on the family's 5-minute grid is kept exactly. The grid only applies to the pickers.
+- **FR-54:** An event that comes with an iCalendar `UID` (from a file, or from a phone calendar's `UID_2445`) MUST get the deterministic ID `UUIDv5("ext:" + uid)` [R22]. If an event with that ID already exists, the draft says "Already on the calendar" and confirming it records an update rather than a second event.
+  - So importing the same school file twice, or on two phones, gives one event per item. This is the same technique House Points uses for chores recorded on two phones.
+- **FR-55:** A phone MAY copy events from its own device calendars (Google and others, through the Android calendar provider) [R21]:
+  - **Picking:** the person picks a calendar and a date range, then ticks events in a review list, as in FR-50.
+  - **Permission:** `READ_CALENDAR` is requested only at that moment, with a plain explanation. Refusing it changes nothing else.
+  - **One-way copy:** the copy isn't linked. Later changes in the other calendar are not followed, and the review list says so.
+  - *Rationale:* following another calendar is the cloud sync that NG-2 excludes. A copy keeps the family calendar the single record, and FR-54 keeps a second copy from duplicating.
+- **FR-56:** Incoming data is untrusted.
+  - A file over 1 MiB, or holding more than 500 events, MUST be refused with a plain message.
+  - Fields are truncated to the limits in FR-8.
+  - The reader MUST NOT throw on malformed input. It skips what it can't read and says how many items it skipped.
+  - *Chosen because* a whole school year of term dates, closures and events is well under 200 events and 100 KiB. Ten times that leaves room for any real file while bounding memory.
+
 ## Worked examples (acceptance tests)
 
-These examples are normative. Each one becomes an acceptance test of `:schedule` on the plain JVM.
+These examples are normative. Each one becomes an acceptance test on the plain JVM: Examples 1 to 12 of `:schedule`, and 13 and 14 of `:intake`.
 
 **Common setup:**
 - Family timezone `Europe/London`, weeks start on Monday.
@@ -354,6 +405,22 @@ Football is on Tue 20 Oct, 17:30 to 18:30, who {Tom}, taking Sam. It overlaps Sw
 
 Only the 3 Nov swimming is moved to Sat 31 Oct. The agenda for 26 Oct to 1 Nov shows it on 31 Oct. The agenda for 2 to 8 Nov doesn't show it on 3 Nov.
 
+### Example 13: an `.ics` file from school
+
+A file has two events:
+- `UID:inset-1@school`, `DTSTART;VALUE=DATE:20261102`, `SUMMARY:INSET day`
+- `UID:hols-1@school`, `DTSTART;VALUE=DATE:20261221`, `DTEND;VALUE=DATE:20270104`, `SUMMARY:Christmas holidays`.
+
+Both are all day, so the review list offers **Add as holidays**. Accepting gives:
+- the holiday "INSET day" on 2 Nov
+- the holiday "Christmas holidays" from 21 Dec to 3 Jan (`DTEND` is exclusive for `DATE` values [R2]).
+
+Swimming then has no occurrences on those days, because it is term time only. Opening the same file again on phone B shows both items as "Already on the calendar" (FR-54).
+
+### Example 14: an invite in another timezone
+
+A file has `DTSTART;TZID=America/New_York:20261103T120000`, `DTEND;TZID=America/New_York:20261103T130000`, `SUMMARY:Call with Grandpa`. In Europe/London family time, that is **17:00 to 18:00** on Tue 3 Nov. New York is still on daylight time until 1 Nov, so on 3 Nov it is UTC−5, and 12:00 there is 17:00 UTC, which is 17:00 GMT. The draft shows 17:00, and FR-34 reports the clash with Swimming for Ada only if she is added to the call.
+
 ## Non-functional requirements
 
 ### Determinism and correctness
@@ -427,7 +494,7 @@ Only the 3 Nov swimming is moved to Sat 31 Oct. The agenda for 26 Oct to 1 Nov s
 ## Non-goals
 
 - **NG-1:** Servers, cloud sync or user accounts. *Because* none are needed (FR-41), and having none removes cost, operations work and a privacy risk.
-- **NG-2:** Syncing with Google, Outlook or iCloud calendars, or importing and exporting `.ics` files. *Deferred.* Importing school term dates from `.ics` is the first candidate. The repeat-rule subset is RFC 5545-shaped so it can map onto RRULE later.
+- **NG-2:** Continuous or two-way sync with Google, Outlook or iCloud calendars, and exporting to them. *Because* that is cloud sync by another route. Bringing events *in* once, from other apps, files and the phone's calendars, is in scope (FR-49 to FR-56).
 - **NG-3:** Tasks, meal plans and shopping lists. *Deferred*, with the model ready for them (NFR-EXT-1).
 - **NG-4:** Children's own devices. *Because* the display is the family's shared view. A later version may add a "child phone" role.
 - **NG-5:** House Points integration. *Because* the two apps release independently. They use different service types and key derivation labels, so they never discover or authenticate each other.
@@ -479,6 +546,9 @@ Only the 3 Nov swimming is moved to Sat 31 Oct. The agenda for 26 Oct to 1 Nov s
 19. **[R19]** Studio Matrx, *Legibility, size and viewing distance* (signage rule of thumb: about 25 mm cap height per 3 m). https://www.studiomatrx.org/students/wayfinding-and-environmental-graphics/legibility-size-and-viewing-distance. Used only to explain why the signage rule is *not* used.
 20. **[R20]** Prior art: Skylight Calendar (a wall display that syncs through cloud calendar accounts, with a paid "Plus" tier; Best Buy Canada review, https://blog.bestbuy.ca/smart-home/skylight-touchscreen-calendar-smart-display-review). The paper "family organiser" calendar, with a column per person, is the layout FR-31 adopts.
 
+21. **[R21]** Android Developers, *Calendar provider overview*: calendar intents (`INSERT`/`EDIT` on `content://com.android.calendar/events` with the `TITLE`, `EXTRA_EVENT_BEGIN_TIME`, `EXTRA_EVENT_END_TIME`, `EXTRA_EVENT_ALL_DAY`, `EVENT_LOCATION`, `DESCRIPTION` and `RRULE` extras, needing no calendar permission), and `READ_CALENDAR` for reading events. https://developer.android.com/identity/providers/calendar-provider
+22. **[R22]** Davis, K., Peabody, B., & Leach, P. *RFC 9562: Universally Unique IDentifiers (UUIDs).* IETF, 2024 (UUIDv5 §5.5, UUIDv7 §5.7). https://www.rfc-editor.org/rfc/rfc9562
+
 ---
 
 ## Confidence gate
@@ -494,6 +564,8 @@ Residual risks:
   - OQ-1: background discovery from a worker is unproven. The fallback (foreground sync) keeps every
     rule intact and only delays the display.
   - OQ-2: night dimming behaviour varies by tablet. It affects comfort, not correctness.
+  - FR-51's date detection is heuristic. It is a SHOULD, English-only, and always shown for confirmation,
+    so a miss costs a tap, never a wrong event.
   - The legibility tiers (NFR-A11Y-4) were sized against a 10" 1280×800 tablet. Tablets that report a
     wrong physical density would get the wrong sizes, so a size check is offered in display settings.
 Known gaps: none that block architecture.
