@@ -131,8 +131,16 @@ public class LanLink(
             scope.launch { resolve(info)?.let { peer -> found.update { it + (info.serviceName to peer) } } }
         }
 
+        /**
+         * A device that restarts re-registers under the same name, and "found" for the new registration can
+         * arrive before "lost" for the old one. So a loss is checked by resolving the name again: if it still
+         * resolves, the device is there (perhaps on a new port) and stays.
+         */
         override fun onServiceLost(info: NsdServiceInfo) {
-            found.update { it - info.serviceName }
+            scope.launch {
+                val again = resolve(info)
+                found.update { if (again == null) it - info.serviceName else it + (info.serviceName to again) }
+            }
         }
     }
 
