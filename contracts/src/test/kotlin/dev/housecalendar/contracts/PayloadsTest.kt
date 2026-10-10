@@ -32,10 +32,10 @@ class PayloadsTest {
         FamilyCreated("The Okellos", ZoneId.of("Europe/London"), DayOfWeek.MONDAY),
         FamilySettings(name = "Okello family"),
         FamilySettings(zone = ZoneId.of("Africa/Kampala"), weekStart = DayOfWeek.SUNDAY),
-        DeviceUpsert(device, name = "Kitchen", role = DeviceRole.DISPLAY, owner = Owner.NoOne),
-        DeviceUpsert(device, role = DeviceRole.PHONE, owner = Owner.Member(sam)),
+        DeviceUpsert(device, name = "Kitchen", role = DeviceRole.Display, owner = Owner.NoOne),
+        DeviceUpsert(device, role = DeviceRole.Phone, owner = Owner.Member(sam)),
         DeviceRemoved(device),
-        MemberUpsert(ada, name = "Ada", colorIndex = 2, kind = MemberKind.CHILD, archived = false),
+        MemberUpsert(ada, name = "Ada", colorIndex = 2, kind = MemberKind.Child, archived = false),
         EventUpsert(
             swim, title = "Swimming", icon = IconKey("swim"), start = oct6,
             slot = Slot.Timed(LocalTime.of(17, 0), LocalTime.of(18, 0), 0),
@@ -164,9 +164,9 @@ class PayloadsTest {
     fun `unknown enum values read as unrecognised instead of breaking the payload`() {
         val body = """{"deviceId":"$device","name":"Ada's phone","role":"CHILD_PHONE"}"""
         val decoded = OpCodec.decodePayload(opOf(DeviceRemoved(device)).copy(type = "device.upsert", body = body))
-        assertEquals(DeviceUpsert(device, name = "Ada's phone", role = DeviceRole.UNRECOGNISED), decoded)
+        assertEquals(DeviceUpsert(device, name = "Ada's phone", role = DeviceRole.Unrecognised("CHILD_PHONE")), decoded)
         val member = """{"memberId":"$ada","kind":"PET"}"""
-        assertEquals(MemberUpsert(ada, kind = MemberKind.UNRECOGNISED),
+        assertEquals(MemberUpsert(ada, kind = MemberKind.Unrecognised("PET")),
             OpCodec.decodePayload(opOf(DeviceRemoved(device)).copy(type = "member.upsert", body = member)))
     }
 

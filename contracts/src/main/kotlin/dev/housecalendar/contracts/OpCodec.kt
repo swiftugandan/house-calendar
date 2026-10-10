@@ -34,10 +34,29 @@ public object OpCodec {
         encodeDefaults = false
     }
 
-    private val serializers: Map<String, KSerializer<out Payload>> = mapOf()
+    private val serializers: Map<String, KSerializer<out Payload>> = mapOf(
+        PayloadType.FAMILY_CREATED to FamilyCreated.serializer(),
+        PayloadType.FAMILY_SETTINGS to FamilySettings.serializer(),
+        PayloadType.DEVICE_UPSERT to DeviceUpsert.serializer(),
+        PayloadType.DEVICE_REMOVED to DeviceRemoved.serializer(),
+        PayloadType.MEMBER_UPSERT to MemberUpsert.serializer(),
+        PayloadType.EVENT_UPSERT to EventUpsert.serializer(),
+        PayloadType.EVENT_CHANGE to EventChange.serializer(),
+        PayloadType.EVENT_EDIT to EventEdit.serializer(),
+        PayloadType.HOLIDAY_UPSERT to HolidayUpsert.serializer(),
+    )
 
     /** The `(type, body)` pair to put in a new op. */
     public fun encodePayload(payload: Payload): Pair<String, String> = when (payload) {
+        is FamilyCreated -> PayloadType.FAMILY_CREATED to json.encodeToString(FamilyCreated.serializer(), payload)
+        is FamilySettings -> PayloadType.FAMILY_SETTINGS to json.encodeToString(FamilySettings.serializer(), payload)
+        is DeviceUpsert -> PayloadType.DEVICE_UPSERT to json.encodeToString(DeviceUpsert.serializer(), payload)
+        is DeviceRemoved -> PayloadType.DEVICE_REMOVED to json.encodeToString(DeviceRemoved.serializer(), payload)
+        is MemberUpsert -> PayloadType.MEMBER_UPSERT to json.encodeToString(MemberUpsert.serializer(), payload)
+        is EventUpsert -> PayloadType.EVENT_UPSERT to json.encodeToString(EventUpsert.serializer(), payload)
+        is EventChange -> PayloadType.EVENT_CHANGE to json.encodeToString(EventChange.serializer(), payload)
+        is EventEdit -> PayloadType.EVENT_EDIT to json.encodeToString(EventEdit.serializer(), payload)
+        is HolidayUpsert -> PayloadType.HOLIDAY_UPSERT to json.encodeToString(HolidayUpsert.serializer(), payload)
         is UnknownPayload -> payload.type to payload.json
         is MalformedPayload -> payload.type to payload.json
     }
