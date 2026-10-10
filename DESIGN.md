@@ -176,15 +176,15 @@ Line height is 1.2 × size for `detail` and 1.1 × size for `glance`.
 **Organiser grid (display Week view).**
 - **People row:** each column is headed by a `surface` pill holding the person's disc and their name in their accent colour.
 - **Day label column:** the weekday in `detail` and the day number in `detail-strong`. Today's number is larger and wears the **pen ring**.
-- **Rows:** the grid starts today. Today's row is a `surface` card with the `raised` shadow, so the day you're in lifts off the wall. Other rows sit on `ground`, separated by hairlines.
+- **Rows:** the grid starts today. Today's row is a `surface` card with the `raised` shadow, so the day you're in lifts off the wall. Other rows sit on `ground`, separated by hairlines. Rows share the height by what they hold: an empty day is slim (0.8 of a row, still enough for its label), each entry past the first in the busiest cell adds 0.8, and an everyone band adds 0.75. Today is never less than 1.6.
 - **Entries:** compact entry cards (`r-md`, the person's tint, a 3 dp rail), each holding the time and the title on one line, or two when the column is narrow.
 - **Everyone:** occurrences for everyone are one `band` card across all columns, with the full rail and the group disc.
 - **Holiday:** the day label is hatched with 45° `rule` lines, with the holiday name in `caption`.
 - **"+N more":** cells measure their entries as drawn, and the last line reads "+2 more" when the rest don't fit.
 
-**Today board (display Today view).** A grid of person cards, each one on that person's tint, with a rail across its top:
+**Today board (display Today view).** A grid of person cards, each one on that person's tint, with their rail at the leading edge:
 - the disc (glance size) and the name in their accent colour
-- **Now:** the current title in `glance`, with "until 15:15" in `detail`; or a quiet dash
+- **Now:** the current title in `glance`, with "until 15:15" beside the name; or "Nothing on now" in `detail`, leaving the room to Next
 - **Next:** "Next · Tomorrow 12:00" in `detail`, the title in `detail-strong`, and who's taking.
 
 The grid is 1 card across for one person, 2 for 2 to 4, 3 for 5 or 6. A larger family scrolls a list. An everyone card leads when an everyone occurrence is now or next.
