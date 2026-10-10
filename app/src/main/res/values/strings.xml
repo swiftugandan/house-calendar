@@ -10,6 +10,9 @@
     <string name="now">Now</string>
     <string name="next">Next</string>
     <string name="until_time">until %1$s</string>
+    <!-- The Today board's mark for "nothing on right now": a quiet dash, read aloud as words. -->
+    <string name="nothing_now">—</string>
+    <string name="nothing_now_spoken">Nothing on now</string>
     <string name="nothing_on_today">Nothing on today</string>
     <string name="nothing_on">Nothing on</string>
     <string name="time_range">%1$s–%2$s</string>
