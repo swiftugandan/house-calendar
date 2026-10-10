@@ -13,12 +13,15 @@ import dev.housecalendar.contracts.Repeat
 import dev.housecalendar.contracts.Slot
 import dev.housecalendar.contracts.Who
 import dev.housecalendar.intake.IncomingDraft
+import dev.housecalendar.intake.InsertExtras
+import dev.housecalendar.intake.Refusal
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.DayOfWeek
 import java.time.LocalDateTime
+import java.time.ZoneId
 
 /** SPEC FR-49 to FR-55 in the app: drafts from other apps into the add sheet, the import review's payloads. */
 class IntakeModelTest {
@@ -83,5 +86,35 @@ class IntakeModelTest {
         assertTrue(IntakeModel.alreadyOnCalendar(IncomingDraft("Book fair", uid = "fair@school"), state))
         assertFalse(IntakeModel.alreadyOnCalendar(IncomingDraft("Book fair", uid = "other@school"), state))
         assertFalse(IntakeModel.alreadyOnCalendar(IncomingDraft("Book fair"), state))
+    }
+}
+
+/** Raw input from other apps is converted only where the family zone is known (CLAUDE.md: family time). */
+class IntakeResolveTest {
+    private val zone = ZoneId.of("Europe/London")
+    private val now = LocalDateTime.parse("2026-10-10T14:20")
+
+    @Test
+    fun `an insert intent converts its instants in the family zone, not the device's`() {
+        val extras = InsertExtras("Parents evening", 1_791_651_600_000, 1_791_654_000_000, false, null, null, null)
+        val arrival = IntakeModel.resolve(Incoming.Insert(extras), ZoneId.of("Asia/Tokyo"), now)
+        val draft = (arrival as Arrival.One).draft
+        assertEquals(date("2026-10-11"), draft.day)
+        assertEquals(timed("02:00", "02:40"), draft.slot)
+    }
+
+    @Test
+    fun `a file with one event opens the sheet, several go to the review, and a refusal is passed on`() {
+        fun ics(vararg events: String) = ("BEGIN:VCALENDAR\r\n" + events.joinToString("") { "BEGIN:VEVENT\r\nUID:$it\r\nDTSTART;VALUE=DATE:20261102\r\nSUMMARY:$it\r\nEND:VEVENT\r\n" } + "END:VCALENDAR\r\n").toByteArray()
+        assertTrue(IntakeModel.resolve(Incoming.File(ics("a")), zone, now) is Arrival.One)
+        assertEquals(2, (IntakeModel.resolve(Incoming.File(ics("a", "b")), zone, now) as Arrival.Many).result.drafts.size)
+        assertEquals(Arrival.Refused(Refusal.NOT_A_CALENDAR), IntakeModel.resolve(Incoming.File("hello".toByteArray()), zone, now))
+    }
+
+    @Test
+    fun `shared text reads its date relative to now in family time`() {
+        val draft = (IntakeModel.resolve(Incoming.Text("Party at Mia's, Sat 3pm"), zone, now) as Arrival.One).draft
+        assertEquals(date("2026-10-10"), draft.day)
+        assertEquals(time("15:00"), (draft.slot as Slot.Timed).start)
     }
 }

@@ -11,17 +11,35 @@ import dev.housecalendar.contracts.Payload
 import dev.housecalendar.contracts.Slot
 import dev.housecalendar.contracts.Taking
 import dev.housecalendar.contracts.Who
+import dev.housecalendar.intake.IcsReader
 import dev.housecalendar.intake.IncomingDraft
+import dev.housecalendar.intake.InsertIntent
+import dev.housecalendar.intake.IntakeResult
+import dev.housecalendar.intake.SharedText
 import dev.housecalendar.schedule.CalendarState
 import dev.housecalendar.schedule.Recording
 import dev.housecalendar.schedule.RepeatRules
 import java.time.LocalDateTime
+import java.time.ZoneId
 
 /**
  * Drafts from other apps (SPEC FR-49 to FR-55) into the app: one opens the add sheet; several go through the
  * import review, which records events for everyone (or holidays), with deterministic ids from UIDs (FR-54).
  */
 object IntakeModel {
+    /** Raw input in family time (SPEC FR-53): a file with one clean event opens the sheet like an intent does. */
+    fun resolve(incoming: Incoming, zone: ZoneId, now: LocalDateTime): Arrival? = when (incoming) {
+        is Incoming.Insert -> InsertIntent.draft(incoming.extras, zone)?.let(Arrival::One)
+        is Incoming.Text -> Arrival.One(SharedText.draft(incoming.text, now))
+        is Incoming.Copies -> Arrival.Many(incoming.drafts, copies = true)
+        is Incoming.Refused -> Arrival.Refused(incoming.reason)
+        is Incoming.File -> when (val result = IcsReader.read(incoming.bytes, zone)) {
+            is IntakeResult.Refused -> Arrival.Refused(result.reason)
+            is IntakeResult.Drafts -> result.drafts.singleOrNull()?.takeIf { result.skipped == 0 && result.overridesSkipped == 0 }?.let(Arrival::One)
+                ?: Arrival.Many(result, copies = false)
+        }
+    }
+
     fun toDraft(incoming: IncomingDraft, now: LocalDateTime): Draft {
         val day = incoming.day ?: now.toLocalDate()
         var draft = DraftModel.withTitle(DraftModel.blank(day, now), incoming.title)

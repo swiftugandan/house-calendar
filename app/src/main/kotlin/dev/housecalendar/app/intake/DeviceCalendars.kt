@@ -14,7 +14,8 @@ import java.time.ZoneId
 /**
  * SPEC FR-55: one-way copies from the phone's own calendars, read through the calendar provider [R21] with
  * READ_CALENDAR, which the screen asks for only at that moment. Each occurrence becomes a one-off draft
- * (repeat rules are not followed into the copy), with the event's UID for FR-54's deterministic id.
+ * (repeat rules are not followed into the copy). Its key for FR-54's deterministic id is the event's UID or,
+ * when the source wrote none, the provider's event id, which is stable on this phone; plus the day.
  */
 object DeviceCalendars {
     /** DESIGN.md: the next 8 weeks; the review lets the person untick anything. */
@@ -29,7 +30,10 @@ object DeviceCalendars {
         CalendarContract.Instances.DESCRIPTION,
         CalendarContract.Instances.UID_2445,
         CalendarContract.Instances.START_DAY,
+        CalendarContract.Instances.EVENT_ID,
     )
+
+    private const val PROVIDER_KEY = "android-calendar-event:"
 
     fun read(context: Context, from: Instant, zone: ZoneId): IntakeResult.Drafts {
         val uri = CalendarContract.Instances.CONTENT_URI.buildUpon().also {
@@ -48,9 +52,9 @@ object DeviceCalendars {
                 if (draft == null || draft.title.isBlank()) {
                     skipped += 1
                 } else {
-                    // One occurrence of a repeating event: its UID plus its day keeps copies distinct and stable.
-                    val uid = cursor.getString(6)?.takeIf { it.isNotBlank() }?.let { "$it/${cursor.getInt(7)}" }
-                    drafts += draft.copy(uid = uid)
+                    // One occurrence of a repeating event: the event's key plus its day keeps copies distinct and stable.
+                    val event = cursor.getString(6)?.takeIf { it.isNotBlank() } ?: "$PROVIDER_KEY${cursor.getLong(8)}"
+                    drafts += draft.copy(uid = "$event/${cursor.getInt(7)}")
                 }
             }
         }

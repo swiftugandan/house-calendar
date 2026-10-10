@@ -7,7 +7,7 @@ import dev.housecalendar.app.calendar.CalendarSnapshot
 import dev.housecalendar.app.calendar.Clock
 import dev.housecalendar.app.calendar.NewMember
 import dev.housecalendar.app.calendar.RecordResult
-import dev.housecalendar.app.intake.Incoming
+import dev.housecalendar.app.model.Incoming
 import dev.housecalendar.app.reminders.ReminderScheduler
 import dev.housecalendar.app.sync.BackgroundSync
 import dev.housecalendar.app.sync.LinkFactory

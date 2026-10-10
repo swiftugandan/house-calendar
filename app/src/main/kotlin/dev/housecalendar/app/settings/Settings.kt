@@ -54,7 +54,7 @@ import dev.housecalendar.app.KeyState
 import dev.housecalendar.app.R
 import dev.housecalendar.app.calendar.CalendarActions
 import dev.housecalendar.app.intake.DeviceCalendars
-import dev.housecalendar.app.intake.Incoming
+import dev.housecalendar.app.model.Incoming
 import dev.housecalendar.app.model.Marks
 import dev.housecalendar.app.phone.DatePickerSheet
 import dev.housecalendar.app.phone.TimePickerSheet
@@ -178,7 +178,7 @@ private fun PhoneCalendarsRow(graph: AppGraph, state: CalendarState) {
     fun copy() {
         scope.launch {
             val drafts = withContext(Dispatchers.IO) { DeviceCalendars.read(context, graph.clock.now(), state.zone) }
-            graph.offerIncoming(Incoming.Many(drafts, copies = true))
+            graph.offerIncoming(Incoming.Copies(drafts))
         }
     }
     val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted -> if (granted) copy() }
