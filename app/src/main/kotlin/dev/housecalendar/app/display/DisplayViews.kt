@@ -62,6 +62,20 @@ import dev.housecalendar.app.ui.components.PersonDisc
 import dev.housecalendar.app.ui.components.Rule
 import dev.housecalendar.app.ui.components.Words
 import dev.housecalendar.app.ui.icons.HcIcons
+import dev.housecalendar.app.ui.components.colourRail
+import dev.housecalendar.app.ui.components.railColors
+import dev.housecalendar.app.ui.components.entryFill
+import dev.housecalendar.app.ui.theme.Depth
+import dev.housecalendar.app.ui.theme.lifted
+import dev.housecalendar.app.model.PersonMark
+import androidx.compose.ui.draw.clip
+import dev.housecalendar.app.ui.theme.Radius
+import dev.housecalendar.app.ui.components.HcCard
+import dev.housecalendar.app.model.Marks
+import dev.housecalendar.schedule.Agenda
+import dev.housecalendar.schedule.DateWindow
+import java.time.temporal.TemporalAdjusters
+import androidx.compose.foundation.layout.PaddingValues
 import dev.housecalendar.app.ui.theme.Hc
 import dev.housecalendar.app.ui.theme.Space
 import dev.housecalendar.schedule.CalendarState
@@ -77,31 +91,47 @@ fun OrganiserView(state: CalendarState, now: Instant, onOpen: (OccurrenceRef) ->
     val dayColumn = em(type.detailSize) * DAY_COLUMN_EMS
     Column(Modifier.fillMaxSize()) {
         if (organiser.layout == OrganiserLayout.COLUMNS) PeopleHeader(organiser, dayColumn)
-        Rule()
         organiser.days.forEach { day ->
             val today = day.word == DayWord.TODAY
-            // The everyone band is a line of its own, so a day that has one gets that line's share of the height
-            // on top of its usual share, rather than taking it from its people's entries.
-            val band = organiser.layout == OrganiserLayout.COLUMNS && day.everyone.isNotEmpty()
-            val weight = (if (today) TODAY_WEIGHT else 1f) + (if (band) BAND_WEIGHT else 0f)
-            Row(
-                Modifier.fillMaxWidth().weight(weight).background(if (today) Hc.colors.surface else Hc.colors.ground),
-            ) {
+            val weight = rowWeight(day, today, organiser.layout)
+            // DESIGN.md "Organiser grid": the day you're in lifts off the wall as a card.
+            val row = if (today) {
+                Modifier.fillMaxWidth().weight(weight).padding(vertical = TODAY_LIFT).lifted(Depth.RAISED, Radius.large).clip(Radius.large).background(Hc.colors.surface)
+            } else {
+                Modifier.fillMaxWidth().weight(weight)
+            }
+            Row(row) {
                 DayLabel(day, dayColumn)
-                Column(Modifier.weight(1f).fillMaxHeight()) {
+                Column(Modifier.weight(1f).fillMaxHeight().padding(vertical = Space.xs)) {
                     if (organiser.layout == OrganiserLayout.COLUMNS) {
                         if (day.everyone.isNotEmpty()) EveryoneBand(day.everyone, onOpen)
                         Row(Modifier.weight(1f)) {
-                            day.cells.forEach { cell -> Cell(cell, Modifier.weight(1f).fillMaxHeight(), onOpen) }
+                            day.cells.forEachIndexed { index, cell -> Cell(cell, organiser.columns.getOrNull(index), Modifier.weight(1f).fillMaxHeight(), onOpen) }
                         }
                     } else {
-                        Cell(day.list, Modifier.fillMaxSize(), onOpen)
+                        Cell(day.list, null, Modifier.fillMaxSize(), onOpen)
                     }
                 }
             }
-            Rule()
+            if (!today && day != organiser.days.lastOrNull()) Rule(Modifier.padding(start = dayColumn))
         }
     }
+}
+
+/**
+ * DESIGN.md "Organiser grid": rows share the height by what they hold. An empty day is a slim row, each entry
+ * past the first in the busiest cell adds most of a row, and an everyone band adds its own line, so busy days
+ * get room and the week still fits without scrolling. Today is never slimmer than [TODAY_WEIGHT].
+ */
+private fun rowWeight(day: OrganiserDay, today: Boolean, layout: OrganiserLayout): Float {
+    val busiest = if (layout == OrganiserLayout.COLUMNS) day.cells.maxOfOrNull { it.size } ?: 0 else day.list.size
+    val band = layout == OrganiserLayout.COLUMNS && day.everyone.isNotEmpty()
+    val entries = when (busiest) {
+        0 -> if (band) 0f else EMPTY_WEIGHT
+        else -> 1f + (busiest - 1).coerceAtMost(EXTRA_ENTRIES_COUNTED) * EXTRA_ENTRY_WEIGHT
+    }
+    val content = entries + if (band) BAND_WEIGHT else 0f
+    return if (today) maxOf(content, TODAY_WEIGHT) else maxOf(content, EMPTY_WEIGHT)
 }
 
 @Composable
@@ -111,9 +141,14 @@ private fun PeopleHeader(organiser: Organiser, dayColumn: Dp) {
     Row(Modifier.fillMaxWidth().padding(vertical = Space.s), verticalAlignment = Alignment.CenterVertically) {
         Spacer(Modifier.width(dayColumn))
         organiser.columns.forEach { person ->
-            Row(Modifier.weight(1f).padding(horizontal = Space.xs), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.s)) {
-                PersonDisc(person, disc)
-                Text(person.name, style = type.detailStrong, color = Hc.colors.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Box(Modifier.weight(1f).padding(horizontal = Space.xs)) {
+                Row(
+                    Modifier.lifted(Depth.RAISED, Radius.full).clip(Radius.full).background(Hc.colors.surface).padding(start = 4.dp, end = Space.l, top = 4.dp, bottom = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.s),
+                ) {
+                    PersonDisc(person, disc)
+                    Text(person.name, style = type.detailStrong, color = Hc.colors.member(person.colorIndex).accent, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
             }
         }
     }
@@ -169,7 +204,8 @@ private fun DayLabel(day: OrganiserDay, width: Dp) {
 private fun EveryoneBand(entries: List<CellEntry>, onOpen: (OccurrenceRef) -> Unit) {
     val type = LocalDisplayType.current
     Row(
-        Modifier.fillMaxWidth().background(Hc.colors.band).padding(horizontal = Space.s, vertical = Space.xs),
+        Modifier.fillMaxWidth().padding(horizontal = Space.xs).padding(bottom = 3.dp).clip(Radius.medium).background(Hc.colors.band)
+            .colourRail(railColors(emptyList(), everyone = true), width = 3.dp, start = 6.dp, inset = 6.dp).padding(start = Space.l, end = Space.s, top = Space.xs, bottom = Space.xs),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.m),
     ) {
         GroupDisc(em(type.detailSize) * SMALL_DISC_EMS, stringResource(R.string.group_disc))
@@ -188,7 +224,7 @@ private fun EveryoneBand(entries: List<CellEntry>, onOpen: (OccurrenceRef) -> Un
  * included, so nothing is ever cut through.
  */
 @Composable
-private fun Cell(entries: List<CellEntry>, modifier: Modifier, onOpen: (OccurrenceRef) -> Unit) {
+private fun Cell(entries: List<CellEntry>, owner: PersonMark?, modifier: Modifier, onOpen: (OccurrenceRef) -> Unit) {
     val type = LocalDisplayType.current
     val oneLineWidth = em(type.detailSize) * ONE_LINE_EMS
     val moreText = @Composable { hidden: Int -> Text(stringResource(R.string.more_count, hidden), style = type.detailCaption, color = Hc.colors.inkMuted) }
@@ -196,7 +232,7 @@ private fun Cell(entries: List<CellEntry>, modifier: Modifier, onOpen: (Occurren
         // Unbounded height, so an entry reports its true height rather than one capped at the cell's.
         val loose = Constraints(maxWidth = constraints.maxWidth)
         fun measured(oneLine: Boolean): List<List<Placeable>> = entries.mapIndexed { index, entry ->
-            subcompose(EntrySlot(index, oneLine)) { EntryLine(entry, oneLine, onOpen) }.map { it.measure(loose) }
+            subcompose(EntrySlot(index, oneLine)) { EntryLine(entry, owner, oneLine, onOpen) }.map { it.measure(loose) }
         }
         fun List<Placeable>.height() = sumOf { it.height }
         // Two lines (time above title) only in a narrow cell, and only when every entry fits that way; an entry
@@ -227,7 +263,7 @@ private data class EntrySlot(val index: Int, val oneLine: Boolean)
 private enum class MoreSlot { PROBE, SHOWN }
 
 @Composable
-private fun EntryLine(entry: CellEntry, oneLine: Boolean, onOpen: (OccurrenceRef) -> Unit) {
+private fun EntryLine(entry: CellEntry, owner: PersonMark?, oneLine: Boolean, onOpen: (OccurrenceRef) -> Unit) {
     val type = LocalDisplayType.current
     val small = em(type.detailSize) * SMALL_DISC_EMS
     val content: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit = {
@@ -243,7 +279,13 @@ private fun EntryLine(entry: CellEntry, oneLine: Boolean, onOpen: (OccurrenceRef
     val time: @Composable () -> Unit = {
         Text(entry.start?.let { Words.time(it) } ?: "", style = type.detailTime, color = if (entry.now) Hc.colors.today else Hc.colors.inkMuted)
     }
-    Column(Modifier.fillMaxWidth().alpha(if (entry.ended) ENDED_ALPHA else 1f).clickable(role = Role.Button) { onOpen(entry.key) }) {
+    // DESIGN.md "Organiser grid": a compact entry card on the column owner's tint, with their rail.
+    val fill = entryFill(listOfNotNull(owner), everyone = false)
+    Column(
+        Modifier.fillMaxWidth().padding(bottom = 2.dp).alpha(if (entry.ended) ENDED_ALPHA else 1f).clip(Radius.small).background(fill)
+            .colourRail(railColors(listOfNotNull(owner), everyone = false), width = 3.dp, start = 4.dp, inset = 5.dp)
+            .clickable(role = Role.Button) { onOpen(entry.key) }.padding(start = 12.dp, end = 6.dp, top = 1.dp, bottom = 1.dp),
+    ) {
         if (oneLine) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.xs)) {
                 if (entry.start != null) time()
@@ -257,59 +299,67 @@ private fun EntryLine(entry: CellEntry, oneLine: Boolean, onOpen: (OccurrenceRef
 }
 
 /**
- * The Today board (DESIGN.md "Today board"): each person's Now in glance type, then Next. It's read at a
- * glance, so everyone shares the screen at once; only a family too large for that scrolls.
+ * The Today board (DESIGN.md "Today board"): a card for each person, on their tint, with their Now in glance
+ * type and their Next. It's read at a glance, so everyone shares the screen at once: one card across for one
+ * person, two for up to four, three for five or six. A larger family scrolls a list.
  */
 @Composable
 fun TodayBoardView(state: CalendarState, now: Instant, onOpen: (OccurrenceRef) -> Unit) {
     val rows = remember(state, now.epochSecond / SECONDS_PER_MINUTE) { TodayBoardModel.build(state, now) }
     val rowKey = { row: BoardRow -> row.person?.id?.toString() ?: "everyone" }
-    if (rows.size <= BOARD_FITTED_ROWS) {
-        Column(Modifier.fillMaxSize()) {
-            rows.forEach { row ->
-                key(rowKey(row)) {
-                    BoardRowView(row, state, now, onOpen, Modifier.weight(1f))
-                    Rule()
-                }
-            }
+    if (rows.size > BOARD_FITTED_ROWS) {
+        LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(Space.m), contentPadding = PaddingValues(vertical = Space.s)) {
+            items(rows, key = rowKey) { row -> BoardCard(row, state, now, onOpen, Modifier.fillMaxWidth()) }
         }
-    } else {
-        LazyColumn(Modifier.fillMaxSize()) {
-            items(rows, key = rowKey) { row ->
-                BoardRowView(row, state, now, onOpen, Modifier.padding(vertical = Space.m))
-                Rule()
+        return
+    }
+    val across = when (rows.size) {
+        1 -> 1
+        in 2..BOARD_TWO_ACROSS -> 2
+        else -> BOARD_THREE_ACROSS
+    }
+    Column(Modifier.fillMaxSize().padding(vertical = Space.s), verticalArrangement = Arrangement.spacedBy(Space.m)) {
+        rows.chunked(across).forEach { line ->
+            Row(Modifier.fillMaxWidth().weight(1f), horizontalArrangement = Arrangement.spacedBy(Space.m)) {
+                line.forEach { row -> key(rowKey(row)) { BoardCard(row, state, now, onOpen, Modifier.weight(1f).fillMaxHeight()) } }
+                repeat(across - line.size) { Spacer(Modifier.weight(1f)) }
             }
         }
     }
 }
 
 @Composable
-private fun BoardRowView(row: BoardRow, state: CalendarState, now: Instant, onOpen: (OccurrenceRef) -> Unit, modifier: Modifier) {
+private fun BoardCard(row: BoardRow, state: CalendarState, now: Instant, onOpen: (OccurrenceRef) -> Unit, modifier: Modifier) {
     val type = LocalDisplayType.current
+    val person = row.person
+    val fill = entryFill(listOfNotNull(person), everyone = person == null)
+    val accent = person?.let { Hc.colors.member(it.colorIndex).accent } ?: Hc.colors.ink
     val disc = em(type.glanceSize) * BOARD_DISC_EMS
-    Row(modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.l)) {
-        if (row.person != null) PersonDisc(row.person, disc) else GroupDisc(disc, stringResource(R.string.group_disc))
-        Column(Modifier.weight(NOW_WEIGHT)) {
+    HcCard(modifier, color = fill) {
+        Column(
+            Modifier.fillMaxSize().colourRail(railColors(listOfNotNull(person), everyone = person == null), width = 5.dp, start = 12.dp, inset = 18.dp)
+                .padding(start = 32.dp, end = Space.xl, top = Space.l, bottom = Space.l).clipToBounds(),
+        ) {
             val current = row.now
-            Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(Space.s)) {
-                Text(row.person?.name ?: stringResource(R.string.everyone), style = type.detailStrong, color = Hc.colors.inkMuted)
-                current?.end?.let { Text(stringResource(R.string.until_time, Words.time(it)), style = type.detail, color = Hc.colors.inkMuted) }
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.m)) {
+                if (person != null) PersonDisc(person, disc, ring = fill) else GroupDisc(disc, stringResource(R.string.group_disc))
+                Text(person?.name ?: stringResource(R.string.everyone), style = type.detailStrong, color = accent, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                current?.end?.let { Text(stringResource(R.string.until_time, Words.time(it)), style = type.detailTime, color = Hc.colors.inkMuted, maxLines = 1) }
             }
             if (current != null) {
                 Text(current.title, style = type.glanceText, color = Hc.colors.ink, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.clickable { onOpen(current.key) })
             } else {
-                val spoken = stringResource(R.string.nothing_now_spoken)
-                Text(stringResource(R.string.nothing_now), style = type.glanceText, color = Hc.colors.rule, modifier = Modifier.semantics { contentDescription = spoken })
+                // Nothing now: a quiet line at the detail tier, leaving the room to Next.
+                Text(stringResource(R.string.nothing_now_spoken), style = type.detail, color = Hc.colors.inkMuted, modifier = Modifier.padding(top = Space.s))
             }
-        }
-        Column(Modifier.weight(1f)) {
-            row.next?.let { next -> NextLine(next, row.person, state, now, onOpen) }
+            Spacer(Modifier.weight(1f))
+            row.next?.let { next -> NextLine(next, person, state, now, onOpen) }
         }
     }
 }
 
 @Composable
-private fun NextLine(next: BoardEntry, person: dev.housecalendar.app.model.PersonMark?, state: CalendarState, now: Instant, onOpen: (OccurrenceRef) -> Unit) {
+private fun NextLine(next: BoardEntry, person: PersonMark?, state: CalendarState, now: Instant, onOpen: (OccurrenceRef) -> Unit) {
     val type = LocalDisplayType.current
     val today = now.atZone(state.zone).toLocalDate()
     Column(Modifier.clickable(role = Role.Button) { onOpen(next.key) }) {
@@ -342,31 +392,34 @@ fun DisplayMonthView(state: CalendarState, now: Instant, onOpen: (OccurrenceRef)
     val type = LocalDisplayType.current
     val text = LocalDateText.current
     val entries = remember(state, grid) {
-        dev.housecalendar.schedule.Agenda.resolve(state, dev.housecalendar.schedule.DateWindow(grid.weeks.first().first().date, grid.weeks.last().last().date))
+        Agenda.resolve(state, DateWindow(grid.weeks.first().first().date, grid.weeks.last().last().date))
     }
     Column(Modifier.fillMaxSize()) {
         Row(Modifier.fillMaxWidth()) {
             grid.weekdays.forEach { weekday ->
-                Text(text.weekdayShort(today.with(java.time.temporal.TemporalAdjusters.nextOrSame(weekday))), style = type.detailCaption, color = Hc.colors.inkMuted, modifier = Modifier.weight(1f).padding(Space.xs))
+                Text(text.weekdayShort(today.with(TemporalAdjusters.nextOrSame(weekday))), style = type.detailCaption, color = Hc.colors.inkMuted, modifier = Modifier.weight(1f).padding(Space.xs))
             }
         }
         grid.weeks.forEach { week ->
-            Rule()
-            Row(Modifier.fillMaxWidth().weight(1f)) {
+            Row(Modifier.fillMaxWidth().weight(1f).padding(vertical = MONTH_GAP / 2), horizontalArrangement = Arrangement.spacedBy(MONTH_GAP)) {
                 week.forEach { cell ->
-                    Column(
-                        Modifier.weight(1f).fillMaxHeight().background(if (cell.today) Hc.colors.surface else if (cell.holiday) Hc.colors.band else Hc.colors.ground).padding(Space.xs).clipToBounds(),
-                    ) {
+                    val tile = when {
+                        cell.today -> Modifier.lifted(Depth.RAISED, Radius.medium).clip(Radius.medium).background(Hc.colors.surface)
+                        cell.holiday -> Modifier.clip(Radius.medium).background(Hc.colors.band)
+                        else -> Modifier.clip(Radius.medium).background(Hc.colors.surface.copy(alpha = if (cell.inMonth) MONTH_TILE else MONTH_TILE_OUT))
+                    }
+                    Column(Modifier.weight(1f).fillMaxHeight().then(tile).padding(Space.xs).clipToBounds(), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                         Box(contentAlignment = Alignment.Center) {
                             Text(cell.date.dayOfMonth.toString(), style = type.detailStrong, color = if (cell.inMonth) Hc.colors.ink else Hc.colors.inkMuted)
                             if (cell.today) PenRing(em(type.detailSize) * MONTH_RING_EMS)
                         }
                         entries.filter { cell.date in it.day..it.lastDay }.take(MONTH_TITLES).forEach { entry ->
-                            Row(Modifier.clickable(role = Role.Button) { onOpen(entry.key) }, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.xs)) {
-                                val colour = entry.people.firstOrNull()?.let { id -> state.allMembers().firstOrNull { it.id == id }?.colorIndex }
-                                Box(Modifier.size(width = 4.dp, height = em(type.detailSize)).background(if (entry.everyone || colour == null) Hc.colors.ink else Hc.colors.member(colour).accent))
-                                Text(entry.title, style = type.detailCaption, color = Hc.colors.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                            }
+                            val people = entry.people.mapNotNull { id -> state.allMembers().firstOrNull { it.id == id }?.let(Marks::mark) }
+                            Box(
+                                Modifier.fillMaxWidth().clip(Radius.small).background(entryFill(people, entry.everyone))
+                                    .colourRail(railColors(people, entry.everyone), width = 3.dp, start = 3.dp, inset = 4.dp)
+                                    .clickable(role = Role.Button) { onOpen(entry.key) }.padding(start = 10.dp, end = 4.dp, top = 1.dp, bottom = 1.dp),
+                            ) { Text(entry.title, style = type.detailCaption, color = Hc.colors.ink, maxLines = 1, overflow = TextOverflow.Ellipsis) }
                         }
                         if (cell.titles.size + cell.more > MONTH_TITLES) Text(stringResource(R.string.more_count, cell.titles.size + cell.more - MONTH_TITLES), style = type.detailCaption, color = Hc.colors.inkMuted)
                     }
@@ -382,12 +435,17 @@ private fun em(size: TextUnit): Dp = with(LocalDensity.current) { size.toDp() }
 
 private const val SECONDS_PER_MINUTE = 60L
 private const val TODAY_WEIGHT = 1.6f
+private val TODAY_LIFT = 3.dp
 /** About one detail line plus the band's padding, as a share of an ordinary day's row. */
-private const val BAND_WEIGHT = 0.5f
+private const val BAND_WEIGHT = 0.75f
+/** A slim row still holds its day label: one detail line and its padding. */
+private const val EMPTY_WEIGHT = 0.8f
+private const val EXTRA_ENTRY_WEIGHT = 0.8f
+private const val EXTRA_ENTRIES_COUNTED = 3
 private const val DAY_COLUMN_EMS = 4.6f
 private const val DISC_EMS = 1.6f
 private const val SMALL_DISC_EMS = 0.9f
-private const val BOARD_DISC_EMS = 1.0f
+private const val BOARD_DISC_EMS = 0.6f
 private const val ONE_LINE_EMS = 13f
 private const val HATCH_GAP = 6
 private const val DAY_NUMBER_SCALE = 0.55f
@@ -396,7 +454,12 @@ private const val PEN_RING_EMS = 0.85f
 private const val MIN_RING_SCALE = 0.7f
 private const val MONTH_RING_EMS = 1.9f
 private const val MONTH_TITLES = 2
+private val MONTH_GAP = 6.dp
+private const val MONTH_TILE = 0.7f
+private const val MONTH_TILE_OUT = 0.3f
 private const val NOW_WEIGHT = 1.4f
 /** Rows that share the 10" screen and stay at the glance tier; more than this, and the board scrolls. */
 private const val BOARD_FITTED_ROWS = 6
+private const val BOARD_TWO_ACROSS = 4
+private const val BOARD_THREE_ACROSS = 3
 private const val ENDED_ALPHA = 0.55f
