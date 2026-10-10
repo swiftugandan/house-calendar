@@ -1,6 +1,9 @@
 package dev.housecalendar.app.settings
 
 import android.Manifest
+import android.content.ActivityNotFoundException
+import android.net.Uri
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -176,6 +179,38 @@ private fun Index(graph: AppGraph, state: CalendarState, onOpen: (SettingsRoute)
         row { LinkRow(stringResource(R.string.recently_deleted), HcIcons.Undo, onRecentlyDeleted) }
         row { LinkRow(stringResource(R.string.settings_export), HcIcons.Share) { onOpen(SettingsRoute.Backup) } }
         row { LinkRow(stringResource(R.string.settings_diagnostics), HcIcons.Notes) { onOpen(SettingsRoute.Diagnostics) } }
+    }
+    About()
+}
+
+/**
+ * SPEC NFR-OPS-4: the installed version and a link to the latest release, opened in the browser only when
+ * asked. House Calendar itself never goes online (NG-1); updating is installing the new APK over this one.
+ */
+@Composable
+private fun About() {
+    val context = LocalContext.current
+    val version = remember { context.packageManager.getPackageInfo(context.packageName, 0).versionName.orEmpty() }
+    var noBrowser by remember { mutableStateOf(false) }
+    GroupedCard {
+        row {
+            LinkRow(stringResource(R.string.check_update), HcIcons.Import) {
+                noBrowser = try {
+                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(RELEASES_URL)))
+                    false
+                } catch (e: ActivityNotFoundException) {
+                    true
+                }
+            }
+        }
+    }
+    Column(Modifier.padding(horizontal = Space.s), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+        Text(stringResource(R.string.settings_version, version), style = Hc.type.label, color = Hc.colors.ink)
+        Text(
+            if (noBrowser) stringResource(R.string.check_update_no_browser, RELEASES_URL) else stringResource(R.string.check_update_body),
+            style = Hc.type.caption, color = Hc.colors.inkMuted,
+        )
+        Text(stringResource(R.string.about_licences), style = Hc.type.caption, color = Hc.colors.inkMuted)
     }
 }
 
@@ -543,6 +578,8 @@ private fun Mono(text: String) {
 }
 
 private val TILE = 32.dp
+/** Where new versions are published (SPEC NFR-OPS-4). */
+private const val RELEASES_URL = "https://github.com/swiftugandan/house-calendar/releases/latest"
 private const val QR_PX = 720
 private const val FIVE_CM_INCHES = 50f / 25.4f
 private const val PERCENT = 100f

@@ -492,6 +492,11 @@ A file has `DTSTART;TZID=America/New_York:20261103T120000`, `DTEND;TZID=America/
   - the next scheduled reminder.
 
   Nothing is sent anywhere.
+- **NFR-OPS-4:** Settings MUST show the installed version and a "Check for a newer version" action that opens the project's latest-release page in the device's browser.
+  - The app itself never connects to anything (NG-1). The browser does, and only when a person asks.
+  - Updating is installing the newer signed APK over the old one, which keeps the calendar (same signing key, Android's in-place update).
+  - If no browser can open the page, the address is shown so it can be typed elsewhere.
+  - *Chosen because* it matches House Points, and an in-app downloader would need the INTERNET permission and an installer flow, against NG-1.
 
 ## Non-goals
 

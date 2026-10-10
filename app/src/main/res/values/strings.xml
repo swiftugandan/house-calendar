@@ -359,4 +359,11 @@
     <string name="backup_other_family">That export is from another family\'s calendar, so it can\'t be brought in here.</string>
     <string name="backup_empty">That export is empty.</string>
     <string name="joining_restore">Restore from an export file instead</string>
+
+    <!-- About and updates (SPEC NFR-OPS-4) -->
+    <string name="settings_version">Version %1$s</string>
+    <string name="check_update">Check for a newer version</string>
+    <string name="check_update_body">Opens the releases page in your browser. House Calendar itself never goes online. To update, install the new version over this one; your calendar stays.</string>
+    <string name="check_update_no_browser">No browser here can open it. The page is %1$s</string>
+    <string name="about_licences">Free software under the MIT licence. The Bricolage Grotesque and Atkinson Hyperlegible typefaces are under the SIL Open Font License.</string>
 </resources>
