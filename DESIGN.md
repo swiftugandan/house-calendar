@@ -89,7 +89,7 @@ There are three families, the same as House Points, all under the SIL Open Font 
 |---|---|---|---|
 | Display: dates, names in headers, the clock | **Bricolage Grotesque** 600/700 | 0.528 em | Has character without being cute. Its optical-size axis (12 to 96) keeps it crisp from phone to wall. |
 | Interface and body text | **Atkinson Hyperlegible Next** 400/700 | 0.496 em | Keeps easily confused characters (`1 l I`, `0 O`) distinct, which matters for children reading times. |
-| Times and figures | **Atkinson Hyperlegible Mono** 400/600 | 0.496 em | Times line up in a column. Same legibility as the body text. |
+| Times and figures | **Atkinson Hyperlegible Next** with tabular figures (`tnum`) | 0.496 em | Times line up in a column. Same legibility as the body text. *Was the Mono face: its 0.632 em advance made 12-hour times ("12:00 PM") collide with the people discs on phones and crowd the display's columns; changed after the first emulator screenshots, 2026-10-10.* |
 
 ### Phone type scale (sp)
 
@@ -100,8 +100,8 @@ There are three families, the same as House Points, all under the SIL Open Font 
 | `body` | 16 / 24 | Atkinson Next 400 | Notes, explanations |
 | `label` | 14 / 20 | Atkinson Next 700 | Buttons, segmented controls, section labels |
 | `caption` | 14 / 20 | Atkinson Next 400, `ink-muted` | Place, "Sam taking", sync line |
-| `time` | 16 / 24 | Atkinson Mono 400 | Times in lists |
-| `time-strong` | 18 / 24 | Atkinson Mono 600 | The time in an event's detail |
+| `time` | 16 / 24 | Atkinson Next 400, tabular | Times in lists |
+| `time-strong` | 18 / 24 | Atkinson Next 700, tabular | The time in an event's detail |
 
 The smallest text anywhere on a phone is 14 sp. There's no all-caps text. Headings never use italics.
 
@@ -128,7 +128,7 @@ Line height is 1.2 × size for `detail` and 1.1 × size for `glance`.
 **Fit check (10" landscape, 1280×800 px).**
 - **Vertical:** the header (date, clock and sync) takes ≈ 110 px and the people row ≈ 56 px, leaving ≈ 620 px for days.
 - **Rows:** with today weighted ×2 over 7 days, a normal row is ≈ 77 px. That's two 32 px lines plus padding, and today has four.
-- **Columns:** at ≤ 4 members, a column is ≈ 279 px. That fits "17:00 Swimming" on one line (≈ 15.7 px per mono character and ≈ 12 px per text character). At 5 or 6 members, columns are ≈ 186 to 223 px, so the time sits above the title. The Week view then shows **5 days** to keep two entries per cell, and is swiped for more.
+- **Columns:** at ≤ 4 members, a column is ≈ 279 px. That fits "17:00 Swimming" on one line (≈ 12 px per character). At 5 or 6 members, columns are ≈ 186 to 223 px, so the time sits above the title. The Week view then shows **5 days** to keep two entries per cell, and is swiped for more.
 - **Portrait (800×1280):** 7 days fit with four lines per row at ≤ 4 members.
 
 ## Space and shape
@@ -153,7 +153,7 @@ Line height is 1.2 × size for `detail` and 1.1 × size for `glance`.
 - **Group disc:** a ring of 2 dp `ink` with "All", for everyone.
 
 **Entry line (the core unit).** One line where it fits:
-- `time` in mono (`ink-muted` once ended), a space, the event icon, then the title in `title` weight.
+- `time` in tabular figures (`ink-muted` once ended), a space, the event icon, then the title in `title` weight.
 - The second line, in `caption`, holds the place, then "· Sam taking" with a 20 dp disc, or "· Needs someone" with the empty disc.
 - A repeating occurrence adds the `repeat` glyph (12 dp) after the title.
 - In a member's column, other people involved appear as 20 dp discs at the end of the first line.
@@ -169,7 +169,7 @@ Line height is 1.2 × size for `detail` and 1.1 × size for `glance`.
 **Today board (display Today view).** One row per member:
 - their disc and name (`glance`)
 - **Now:** the current occurrence's title (`glance`) and "until 15:15" (`detail`)
-- **Next:** its time (mono, `glance`), its title, and "Sam taking" (`detail`).
+- **Next:** its time (tabular figures), its title, and "Sam taking" (`detail`).
 
 An everyone row comes first when an everyone occurrence is now or next.
 

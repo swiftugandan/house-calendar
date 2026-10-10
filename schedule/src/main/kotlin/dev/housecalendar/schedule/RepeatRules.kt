@@ -67,6 +67,15 @@ public object RepeatRules {
         is Repeat.Yearly -> rule.copy(until = null)
     }
 
+    public fun withUntil(rule: Repeat, until: LocalDate?): Repeat = when (rule) {
+        Repeat.Never, is Repeat.Unrecognised -> rule
+        is Repeat.Daily -> rule.copy(until = until)
+        is Repeat.Weekly -> rule.copy(until = until)
+        is Repeat.MonthlyOnDay -> rule.copy(until = until)
+        is Repeat.MonthlyOnWeekday -> rule.copy(until = until)
+        is Repeat.Yearly -> rule.copy(until = until)
+    }
+
     /** The ordinal of [date]'s weekday in its month: 1 to 4, or 5 for a fifth occurrence. */
     public fun ordinalOf(date: LocalDate): Int = (date.dayOfMonth - 1) / DAYS_PER_WEEK + 1
 

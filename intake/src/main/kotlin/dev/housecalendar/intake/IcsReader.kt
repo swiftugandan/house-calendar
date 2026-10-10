@@ -90,7 +90,10 @@ public object IcsReader {
         lines.forEach { line ->
             when {
                 line.name == "BEGIN" && line.value.equals("VEVENT", ignoreCase = true) -> current = mutableListOf()
-                line.name == "END" && line.value.equals("VEVENT", ignoreCase = true) -> current?.let { events += it }.also { current = null }
+                line.name == "END" && line.value.equals("VEVENT", ignoreCase = true) -> {
+                    current?.let { events += it }
+                    current = null
+                }
                 line.name == "BEGIN" && current != null -> nested += 1
                 line.name == "END" && current != null && nested > 0 -> nested -= 1
                 nested == 0 -> current?.add(line)

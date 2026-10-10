@@ -37,6 +37,12 @@ import dev.housecalendar.app.ui.icons.HcIcons
 import dev.housecalendar.app.ui.theme.Hc
 import dev.housecalendar.app.ui.theme.Radius
 import dev.housecalendar.app.ui.theme.Space
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
+import androidx.compose.runtime.remember
 import dev.housecalendar.contracts.IconKey
 import java.time.LocalTime
 
@@ -52,7 +58,8 @@ fun AgendaRowView(row: EntryRow, onClick: () -> Unit, modifier: Modifier = Modif
         Words.taking(row.taking),
         row.place.ifBlank { null },
     ).joinToString(", ")
-    Row(
+    val timeColumn = timeColumnWidth()
+    BoxWithConstraints(
         modifier
             .fillMaxWidth()
             .heightIn(min = 56.dp)
@@ -60,34 +67,54 @@ fun AgendaRowView(row: EntryRow, onClick: () -> Unit, modifier: Modifier = Modif
             .padding(horizontal = Space.gutter, vertical = Space.s)
             .alpha(if (row.ended) ENDED_ALPHA else 1f)
             .semantics(mergeDescendants = true) { contentDescription = describe },
-        verticalAlignment = Alignment.Top,
     ) {
-        Column(Modifier.width(TIME_COLUMN)) {
-            if (row.start != null) {
-                Text(Words.time(row.start), style = type.time, color = colors.ink, maxLines = 1, softWrap = false)
-                if (row.end != null) Text(Words.time(row.end), style = type.caption.copy(fontFamily = type.time.fontFamily), color = colors.inkMuted, maxLines = 1, softWrap = false)
-            } else {
-                Text(stringResource(R.string.all_day), style = type.caption, color = colors.inkMuted)
+        // WCAG 1.4.10 reflow: when large text makes the time column crowd out the title, times go above it.
+        val stacked = timeColumn > maxWidth * STACK_FRACTION
+        Column {
+            if (stacked) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Space.s), verticalAlignment = Alignment.Bottom) { Times(row) }
+                Spacer(Modifier.height(Space.xs))
+            }
+            Row(verticalAlignment = Alignment.Top) {
+                if (!stacked) Column(Modifier.width(timeColumn)) { Times(row) }
+                EntryBody(row)
             }
         }
-        Box(Modifier.padding(top = 2.dp, end = Space.m)) {
-            when {
-                row.everyone -> GroupDisc(22.dp, stringResource(R.string.group_disc))
-                else -> PeopleStack(row.people, 22.dp)
+    }
+}
+
+@Composable
+private fun Times(row: EntryRow) {
+    val type = Hc.type
+    if (row.start != null) {
+        Text(Words.time(row.start), style = type.time, color = Hc.colors.ink, maxLines = 1, softWrap = false)
+        if (row.end != null) Text(Words.time(row.end), style = type.caption.copy(fontFamily = type.time.fontFamily), color = Hc.colors.inkMuted, maxLines = 1, softWrap = false)
+    } else {
+        Text(stringResource(R.string.all_day), style = type.caption, color = Hc.colors.inkMuted)
+    }
+}
+
+@Composable
+private fun RowScope.EntryBody(row: EntryRow) {
+    val colors = Hc.colors
+    val type = Hc.type
+    Box(Modifier.padding(top = 2.dp, end = Space.m)) {
+        when {
+            row.everyone -> GroupDisc(22.dp, stringResource(R.string.group_disc))
+            else -> PeopleStack(row.people, 22.dp)
+        }
+    }
+    Column(Modifier.weight(1f)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            EventIcon(row.icon, 20.dp)
+            Text(row.title, style = type.title, color = colors.ink, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
+            if (row.repeating) {
+                Spacer(Modifier.width(Space.xs))
+                Icon(HcIcons.Repeat, contentDescription = null, tint = colors.inkMuted, modifier = Modifier.size(14.dp))
             }
         }
-        Column(Modifier.weight(1f)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                EventIcon(row.icon, 20.dp)
-                Text(row.title, style = type.title, color = colors.ink, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
-                if (row.repeating) {
-                    Spacer(Modifier.width(Space.xs))
-                    Icon(HcIcons.Repeat, contentDescription = null, tint = colors.inkMuted, modifier = Modifier.size(14.dp))
-                }
-            }
-            DetailLine(row.place, row.taking)
-            row.clashes.forEach { ClashLine(it) }
-        }
+        DetailLine(row.place, row.taking)
+        row.clashes.forEach { ClashLine(it) }
     }
 }
 
@@ -129,7 +156,7 @@ fun EventIcon(key: IconKey, size: androidx.compose.ui.unit.Dp, modifier: Modifie
 @Composable
 fun NowLine(now: LocalTime, modifier: Modifier = Modifier) {
     Row(modifier.fillMaxWidth().padding(horizontal = Space.gutter), verticalAlignment = Alignment.CenterVertically) {
-        Text(Words.time(now), style = Hc.type.label.copy(fontFamily = Hc.type.time.fontFamily), color = Hc.colors.today, modifier = Modifier.widthIn(min = TIME_COLUMN))
+        Text(Words.time(now), style = Hc.type.label.copy(fontFamily = Hc.type.time.fontFamily), color = Hc.colors.today, modifier = Modifier.widthIn(min = timeColumnWidth()))
         Box(Modifier.weight(1f).height(2.dp).background(Hc.colors.today, Radius.small))
     }
 }
@@ -154,5 +181,20 @@ fun DayHeading(day: AgendaDay, modifier: Modifier = Modifier) {
     }
 }
 
-private val TIME_COLUMN = 84.dp
+/**
+ * The time column fits the widest time in the device's clock format and font scale, measured rather than
+ * fixed, so "10:00 PM" at 200% text is never clipped (DESIGN.md "Agenda row").
+ */
+@Composable
+private fun timeColumnWidth(): Dp {
+    val measurer = rememberTextMeasurer()
+    val style = Hc.type.time
+    val density = LocalDensity.current
+    val samples = WIDEST_TIMES.map { Words.time(it) }
+    val widest = remember(samples, style, density) { samples.maxOf { measurer.measure(it, style, maxLines = 1, softWrap = false).size.width } }
+    return with(density) { widest.toDp() } + Space.s
+}
+
+private val WIDEST_TIMES = listOf(LocalTime.of(10, 0), LocalTime.of(22, 0))
+private const val STACK_FRACTION = 0.3f
 private const val ENDED_ALPHA = 0.55f

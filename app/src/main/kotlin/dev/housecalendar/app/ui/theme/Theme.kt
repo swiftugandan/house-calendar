@@ -58,8 +58,8 @@ val PhoneType = HcType(
     body = TextStyle(fontFamily = Fonts.atkinson, fontWeight = FontWeight(400), fontSize = 16.sp, lineHeight = 24.sp),
     label = TextStyle(fontFamily = Fonts.atkinson, fontWeight = FontWeight(700), fontSize = 14.sp, lineHeight = 20.sp),
     caption = TextStyle(fontFamily = Fonts.atkinson, fontWeight = FontWeight(400), fontSize = 14.sp, lineHeight = 20.sp),
-    time = TextStyle(fontFamily = Fonts.mono, fontWeight = FontWeight(400), fontSize = 16.sp, lineHeight = 24.sp),
-    timeStrong = TextStyle(fontFamily = Fonts.mono, fontWeight = FontWeight(600), fontSize = 18.sp, lineHeight = 24.sp),
+    time = TextStyle(fontFamily = Fonts.atkinson, fontWeight = FontWeight(400), fontSize = 16.sp, lineHeight = 24.sp, fontFeatureSettings = "tnum"),
+    timeStrong = TextStyle(fontFamily = Fonts.atkinson, fontWeight = FontWeight(700), fontSize = 18.sp, lineHeight = 24.sp, fontFeatureSettings = "tnum"),
     initials = TextStyle(fontFamily = Fonts.bricolage, fontWeight = FontWeight(700), fontSize = 18.sp, lineHeight = 20.sp),
 )
 

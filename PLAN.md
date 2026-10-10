@@ -67,8 +67,8 @@ There are no cycles. `:schedule`, `:intake` and `:sync` are independent of each 
   - Socket framing tests.
   - The address rule.
   - The role is carried in TXT.
-  - **Live:** a desktop JVM peer syncs with the app on the emulator over `adb forward`.
-  - **Device to device:** the two emulators can't see each other's mDNS (separate NATs), so this waits for real devices on one Wi-Fi.
+  - **Live:** the two emulators share a virtual Wi-Fi network (10.0.2.16 and 10.0.2.17), so mDNS and TCP between them work. Phone-to-display sync was verified that way. The desktop peer over `adb forward` turned out to be unnecessary.
+  - **Real Wi-Fi:** your router's multicast behaviour still needs real devices.
 
 ## 4b. `:nearby` (Android library, copied)
 
@@ -105,11 +105,11 @@ There are no cycles. `:schedule`, `:intake` and `:sync` are independent of each 
 - **Emulators:** `hc_phone` (Pixel 7, API 35) and `hc_tablet` (10.1" WXGA 1280×800, mdpi, API 35).
   - They run **headless** (`-no-window -gpu swiftshader_indirect`), because the host's WindowServer has a crash history.
   - They are driven with `adb` (`input`, `am`, `screencap`).
-- **Live sync:** a desktop peer, as in House Points (`LiveDesktopPeerTest` through `adb forward`).
+- **Live sync:** emulator to emulator over their shared virtual Wi-Fi (see §4a).
 
 ## Deferred (recorded, not forgotten)
 
-- Phone-to-display sync over real Wi-Fi, and OQ-1 (background NSD), both need physical devices on one network.
+- Phone-to-display sync over real Wi-Fi, and OQ-1 (background NSD), both need physical devices on one network. The protocol itself is verified emulator to emulator.
 - `:nearby` live verification needs two physical devices.
 - On-device performance timing needs a physical phone.
 

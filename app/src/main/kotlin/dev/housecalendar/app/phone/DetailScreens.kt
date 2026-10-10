@@ -105,14 +105,14 @@ fun EventDetailScreen(
                 if (detail.place.isNotBlank()) Line(HcIcons.Place) { Text(detail.place, style = Hc.type.body, color = Hc.colors.ink) }
                 Line(HcIcons.Taking) {
                     when (val mark = detail.taking) {
-                        is TakingMark.Person -> Row(verticalAlignment = Alignment.CenterVertically) {
+                        is TakingMark.Person -> Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.s)) {
                             PersonDisc(mark.person, 24.dp)
-                            Text(" " + stringResource(R.string.taking_person, mark.person.name), style = Hc.type.body, color = Hc.colors.ink)
+                            Text(stringResource(R.string.taking_person, mark.person.name), style = Hc.type.body, color = Hc.colors.ink)
                         }
                         TakingMark.NeedsSomeone -> Column(verticalArrangement = Arrangement.spacedBy(Space.s)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.s)) {
                                 EmptyDisc(24.dp)
-                                Text(" " + stringResource(R.string.needs_someone), style = Hc.type.body, color = Hc.colors.ink)
+                                Text(stringResource(R.string.needs_someone), style = Hc.type.body, color = Hc.colors.ink)
                             }
                             FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.s)) {
                                 NeedsSomeoneModel.adults(state).forEach { adult ->
@@ -201,9 +201,10 @@ fun NeedsSomeoneScreen(graph: AppGraph, state: CalendarState, now: Instant, onBa
                                     if (repeating) asking = row.key to adult else onPlan(EditPlanner.change(state, row.key, Scope.ALL, Changes(taking = Taking.Person(adult.id))))
                                 }.padding(horizontal = Space.xs),
                                 verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(Space.s),
                             ) {
                                 PersonDisc(adult, 32.dp, describe = false)
-                                Text(" " + if (adult.id == me) stringResource(R.string.ill_take) else stringResource(R.string.take_as, adult.name), style = Hc.type.label, color = Hc.colors.ink)
+                                Text(if (adult.id == me) stringResource(R.string.ill_take) else stringResource(R.string.take_as, adult.name), style = Hc.type.label, color = Hc.colors.ink)
                             }
                         }
                     }

@@ -10,11 +10,12 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,19 +23,24 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import dev.housecalendar.app.AppGraph
 import dev.housecalendar.app.R
+import dev.housecalendar.app.intake.Incoming
 import dev.housecalendar.app.model.Draft
+import dev.housecalendar.app.model.IntakeModel
 import dev.housecalendar.app.settings.SettingsRoute
 import dev.housecalendar.app.settings.SettingsScreen
 import dev.housecalendar.contracts.EventChange
 import dev.housecalendar.contracts.EventEdit
 import dev.housecalendar.contracts.EventUpsert
 import dev.housecalendar.contracts.Payload
+import dev.housecalendar.intake.IntakeResult
+import dev.housecalendar.intake.Refusal
 import dev.housecalendar.schedule.CalendarState
 import dev.housecalendar.schedule.OccurrenceRef
 import dev.housecalendar.schedule.Plan
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 /** Where the phone is. The home screen is always at the bottom of the stack. */
 sealed interface PhoneRoute {
@@ -45,6 +51,8 @@ sealed interface PhoneRoute {
     data object NeedsSomeone : PhoneRoute
 
     data object RecentlyDeleted : PhoneRoute
+
+    data class Import(val result: IntakeResult.Drafts, val copies: Boolean) : PhoneRoute
 
     data class Settings(val page: SettingsRoute) : PhoneRoute
 }
@@ -65,6 +73,20 @@ fun PhoneRoot(graph: AppGraph, state: CalendarState, now: Instant, link: Occurre
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
+    val incoming by graph.incoming.collectAsState()
+    LaunchedEffect(incoming) {
+        when (val arrived = incoming) {
+            null -> return@LaunchedEffect
+            is Incoming.One -> {
+                val draft = IntakeModel.toDraft(arrived.draft, LocalDateTime.ofInstant(now, state.zone))
+                val note = arrived.draft.unmappableRule?.let { context.getString(R.string.import_unmappable_note, it) }
+                sheet = SheetMode.New(draft.day, prefill = draft.copy(notes = listOfNotNull(draft.notes.ifBlank { null }, note).joinToString("\n")))
+            }
+            is Incoming.Many -> stack.add(PhoneRoute.Import(arrived.result, arrived.copies))
+            is Incoming.Refused -> snackbar.showSnackbar(context.getString(refusalText(arrived.reason)))
+        }
+        graph.takeIncoming()
+    }
     LaunchedEffect(link) {
         if (link != null) {
             stack.add(PhoneRoute.Detail(link))
@@ -108,6 +130,7 @@ fun PhoneRoot(graph: AppGraph, state: CalendarState, now: Instant, link: Occurre
             )
             PhoneRoute.NeedsSomeone -> NeedsSomeoneScreen(graph, state, now, onBack = ::back, onOpen = { open(PhoneRoute.Detail(it)) }, onPlan = { recordPlan(it) })
             PhoneRoute.RecentlyDeleted -> RecentlyDeletedScreen(graph, state, onBack = ::back)
+            is PhoneRoute.Import -> ImportReviewScreen(graph, state, route.result, route.copies, onDone = ::back)
             is PhoneRoute.Settings -> SettingsScreen(
                 graph, state, now, route.page,
                 onBack = ::back,
@@ -120,6 +143,12 @@ fun PhoneRoot(graph: AppGraph, state: CalendarState, now: Instant, link: Occurre
         }
         SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 80.dp))
     }
+}
+
+private fun refusalText(reason: Refusal): Int = when (reason) {
+    Refusal.TOO_LARGE -> R.string.import_refused_large
+    Refusal.TOO_MANY_EVENTS -> R.string.import_refused_many
+    Refusal.NOT_A_CALENDAR -> R.string.import_refused_not_calendar
 }
 
 /** Undo for a deletion: the same registers written back (SPEC FR-16, FR-17). */

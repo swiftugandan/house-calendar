@@ -1,9 +1,10 @@
 package dev.housecalendar.app.settings
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -11,6 +12,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -29,6 +31,7 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,14 +42,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import dev.housecalendar.app.AppGraph
 import dev.housecalendar.app.KeyState
 import dev.housecalendar.app.R
 import dev.housecalendar.app.calendar.CalendarActions
+import dev.housecalendar.app.intake.DeviceCalendars
+import dev.housecalendar.app.intake.Incoming
 import dev.housecalendar.app.model.Marks
 import dev.housecalendar.app.phone.DatePickerSheet
 import dev.housecalendar.app.phone.TimePickerSheet
@@ -56,6 +64,7 @@ import dev.housecalendar.app.sync.SyncFailure
 import dev.housecalendar.app.sync.SyncState
 import dev.housecalendar.app.ui.components.ChoiceRow
 import dev.housecalendar.app.ui.components.Field
+import dev.housecalendar.app.ui.components.IconAction
 import dev.housecalendar.app.ui.components.LocalDateText
 import dev.housecalendar.app.ui.components.OutcomeButton
 import dev.housecalendar.app.ui.components.PersonDisc
@@ -67,6 +76,7 @@ import dev.housecalendar.app.ui.components.TopBar
 import dev.housecalendar.app.ui.components.Words
 import dev.housecalendar.app.ui.icons.HcIcons
 import dev.housecalendar.app.ui.theme.Hc
+import dev.housecalendar.app.ui.theme.PhysicalType
 import dev.housecalendar.app.ui.theme.Radius
 import dev.housecalendar.app.ui.theme.Space
 import dev.housecalendar.contracts.CalendarIds
@@ -78,6 +88,7 @@ import dev.housecalendar.contracts.HolidayUpsert
 import dev.housecalendar.contracts.Limits
 import dev.housecalendar.contracts.MemberKind
 import dev.housecalendar.contracts.MemberUpsert
+import dev.housecalendar.contracts.Op
 import dev.housecalendar.data.DisplayHome
 import dev.housecalendar.data.ReminderChoice
 import dev.housecalendar.data.SyncHistoryEntry
@@ -86,13 +97,15 @@ import dev.housecalendar.schedule.CalendarState
 import dev.housecalendar.schedule.MemberView
 import dev.housecalendar.sync.FamilyKey
 import dev.housecalendar.sync.SyncOutcome
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 
-enum class SettingsRoute { Index, Family, People, Holidays, Devices, Reminders, Display, Diagnostics }
+enum class SettingsRoute { Index, Family, People, Holidays, Devices, Reminders, Display, Backup, Diagnostics }
 
 /** Settings: the family's shared settings, and this device's own (SAD §3.5 `DeviceSettingsStore`). */
 @Composable
@@ -113,6 +126,7 @@ fun SettingsScreen(
         SettingsRoute.Devices -> stringResource(R.string.settings_devices)
         SettingsRoute.Reminders -> stringResource(R.string.settings_reminders)
         SettingsRoute.Display -> stringResource(R.string.settings_display)
+        SettingsRoute.Backup -> stringResource(R.string.settings_export)
         SettingsRoute.Diagnostics -> stringResource(R.string.settings_diagnostics)
     }
     Column(Modifier.fillMaxSize()) {
@@ -129,6 +143,9 @@ fun SettingsScreen(
                 SettingsRoute.Devices -> DevicesPage(graph, state, now)
                 SettingsRoute.Reminders -> RemindersPage(graph)
                 SettingsRoute.Display -> DisplayPage(graph)
+                SettingsRoute.Backup -> (graph.key.collectAsState().value as? KeyState.Held)?.let { held ->
+                    BackupPage(graph, held.family, now.atZone(state.zone).toLocalDate())
+                }
                 SettingsRoute.Diagnostics -> DiagnosticsPage(graph, state)
             }
         }
@@ -137,7 +154,7 @@ fun SettingsScreen(
 
 @Composable
 private fun Index(graph: AppGraph, state: CalendarState, onOpen: (SettingsRoute) -> Unit, onRecentlyDeleted: () -> Unit) {
-    if (state.diagnostics.newestSchema > dev.housecalendar.contracts.Op.CURRENT_SCHEMA || state.diagnostics.unknownByType.isNotEmpty()) {
+    if (state.diagnostics.newestSchema > Op.CURRENT_SCHEMA || state.diagnostics.unknownByType.isNotEmpty()) {
         Text(stringResource(R.string.newer_version_notice), style = Hc.type.body, color = Hc.colors.ink)
     }
     val display = graph.role() == DeviceRole.Display
@@ -146,9 +163,29 @@ private fun Index(graph: AppGraph, state: CalendarState, onOpen: (SettingsRoute)
     LinkRow(stringResource(R.string.settings_holidays), HcIcons.Holiday) { onOpen(SettingsRoute.Holidays) }
     LinkRow(stringResource(R.string.settings_devices), HcIcons.Sync) { onOpen(SettingsRoute.Devices) }
     if (!display) LinkRow(stringResource(R.string.settings_reminders), HcIcons.Bell) { onOpen(SettingsRoute.Reminders) }
+    if (!display) PhoneCalendarsRow(graph, state)
     if (display) LinkRow(stringResource(R.string.settings_display), HcIcons.Display) { onOpen(SettingsRoute.Display) }
     LinkRow(stringResource(R.string.recently_deleted), HcIcons.Undo, onRecentlyDeleted)
+    LinkRow(stringResource(R.string.settings_export), HcIcons.Share) { onOpen(SettingsRoute.Backup) }
     LinkRow(stringResource(R.string.settings_diagnostics), HcIcons.Notes) { onOpen(SettingsRoute.Diagnostics) }
+}
+
+/** SPEC FR-55: READ_CALENDAR is asked for only here, then the review opens with the copies. */
+@Composable
+private fun PhoneCalendarsRow(graph: AppGraph, state: CalendarState) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    fun copy() {
+        scope.launch {
+            val drafts = withContext(Dispatchers.IO) { DeviceCalendars.read(context, graph.clock.now(), state.zone) }
+            graph.offerIncoming(Incoming.Many(drafts, copies = true))
+        }
+    }
+    val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted -> if (granted) copy() }
+    LinkRow(stringResource(R.string.settings_import_calendar), HcIcons.Import) {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED) copy()
+        else permission.launch(Manifest.permission.READ_CALENDAR)
+    }
 }
 
 @Composable
@@ -269,7 +306,7 @@ private fun HolidaysPage(graph: AppGraph, state: CalendarState, now: Instant) {
         ) {
             Column(Modifier.weight(1f)) {
                 Text(holiday.name, style = Hc.type.title, color = Hc.colors.ink)
-                Text(stringResource(R.string.time_range, text.dayShort(holiday.first), text.dayShort(holiday.last)), style = Hc.type.caption, color = Hc.colors.inkMuted)
+                Text(if (holiday.first == holiday.last) text.dayShort(holiday.first) else stringResource(R.string.time_range, text.dayShort(holiday.first), text.dayShort(holiday.last)), style = Hc.type.caption, color = Hc.colors.inkMuted)
             }
             Icon(HcIcons.Edit, contentDescription = null, tint = Hc.colors.inkMuted)
         }
@@ -288,8 +325,8 @@ private fun HolidaysPage(graph: AppGraph, state: CalendarState, now: Instant) {
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(Space.m)) {
                     Field(name, { name = it }, stringResource(R.string.holiday_name_hint))
-                    QuietButton(stringResource(R.string.holiday_from) + " " + text.dayShort(first), { picking = true })
-                    QuietButton(stringResource(R.string.holiday_to) + " " + text.dayShort(last), { picking = false })
+                    QuietButton(stringResource(R.string.holiday_from, text.dayShort(first)), { picking = true })
+                    QuietButton(stringResource(R.string.holiday_to, text.dayShort(last)), { picking = false })
                     if (edit.id != null) QuietButton(stringResource(R.string.delete), {
                         scope.launch { graph.record(listOf(HolidayUpsert(edit.id, deleted = true))) }
                         editing = null
@@ -372,7 +409,7 @@ private fun DeviceRow(name: String, role: DeviceRole, status: String, onRemove: 
             Text(name, style = Hc.type.title, color = Hc.colors.ink)
             Text(listOf(stringResource(if (role == DeviceRole.Display) R.string.role_display_short else R.string.role_phone_short), status).joinToString(" · "), style = Hc.type.caption, color = Hc.colors.inkMuted)
         }
-        if (onRemove != null) dev.housecalendar.app.ui.components.IconAction(HcIcons.Delete, stringResource(R.string.remove_device), { confirming = true }, tint = Hc.colors.inkMuted)
+        if (onRemove != null) IconAction(HcIcons.Delete, stringResource(R.string.remove_device), { confirming = true }, tint = Hc.colors.inkMuted)
     }
     if (confirming && onRemove != null) {
         AlertDialog(
@@ -451,10 +488,10 @@ private fun DisplayPage(graph: AppGraph) {
 /** A bar 5 cm long at the current scale, to hold a ruler against (DESIGN.md "Display type"). */
 @Composable
 private fun SizeBar(sizePercent: Int) {
-    val metrics = androidx.compose.ui.platform.LocalContext.current.resources.displayMetrics
-    val ppi = dev.housecalendar.app.ui.theme.PhysicalType.ppi(metrics.xdpi, metrics.densityDpi)
+    val metrics = LocalContext.current.resources.displayMetrics
+    val ppi = PhysicalType.ppi(metrics.xdpi, metrics.densityDpi)
     val px = FIVE_CM_INCHES * ppi * sizePercent / PERCENT
-    val width = with(androidx.compose.ui.platform.LocalDensity.current) { px.toDp() }
+    val width = with(LocalDensity.current) { px.toDp() }
     Box(Modifier.size(width, 12.dp).background(Hc.colors.ink))
 }
 
@@ -463,10 +500,11 @@ private fun SizeBar(sizePercent: Int) {
 private fun DiagnosticsPage(graph: AppGraph, state: CalendarState) {
     val history by graph.history.collectAsState()
     val settings by graph.settings.collectAsState()
+    val key by graph.key.collectAsState()
     val vector = remember { mutableStateOf<String?>(null) }
-    androidx.compose.runtime.LaunchedEffect(state) { vector.value = graph.opLog.vector().toString() }
+    LaunchedEffect(state) { vector.value = graph.opLog.vector().toString() }
     Mono("device ${graph.deviceId}")
-    Mono("role ${graph.role()}  family ${(graph.key.value as? KeyState.Held)?.family}")
+    Mono("role ${state.devices[graph.deviceId]?.role?.value}  family ${(key as? KeyState.Held)?.family}")
     Mono("zone ${state.zone.id}  members ${state.allMembers().size}  events ${state.events.size}  holidays ${state.holidays.size}")
     Mono("vector ${vector.value.orEmpty()}")
     Mono("unknown ${state.diagnostics.unknownByType}  malformed ${state.diagnostics.malformed}  newest schema ${state.diagnostics.newestSchema}")

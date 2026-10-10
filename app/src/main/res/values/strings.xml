@@ -14,6 +14,7 @@
     <string name="nothing_on">Nothing on</string>
     <string name="time_range">%1$s–%2$s</string>
     <string name="time_range_next_day">%1$s–%2$s %3$s</string>
+    <string name="time_on_day">%1$s %2$s</string>
     <string name="continues">continues</string>
 
     <!-- Taking (SPEC FR-11) -->
@@ -272,8 +273,8 @@
     <string name="cancel">Cancel</string>
     <string name="holiday_name_hint">Half term</string>
     <string name="holiday_add">Add a holiday</string>
-    <string name="holiday_from">From</string>
-    <string name="holiday_to">To</string>
+    <string name="holiday_from">From %1$s</string>
+    <string name="holiday_to">To %1$s</string>
     <string name="holidays_empty">No holidays yet. Add your school\'s holidays and term-time activities skip them.</string>
     <string name="reminders_mine">Things I\'m in or taking</string>
     <string name="reminders_everyone">Everyone\'s events</string>
@@ -296,4 +297,54 @@
     <string name="reminder_you_are_in">%1$s</string>
     <string name="reminder_late">Late: %1$s</string>
     <string name="reminder_all_day">%1$s · all day</string>
+
+    <!-- Adding from other apps (SPEC FR-49 to FR-56) -->
+    <string name="import_title">Add to the calendar</string>
+    <plurals name="import_add_events">
+        <item quantity="one">Add %1$d event</item>
+        <item quantity="other">Add %1$d events</item>
+    </plurals>
+    <plurals name="import_add_holidays">
+        <item quantity="one">Add %1$d as a holiday</item>
+        <item quantity="other">Add %1$d as holidays</item>
+    </plurals>
+    <string name="import_as_events">Add as events instead</string>
+    <string name="import_already">Already on the calendar · will update</string>
+    <plurals name="import_skipped">
+        <item quantity="one">%1$d item couldn\'t be read and was left out.</item>
+        <item quantity="other">%1$d items couldn\'t be read and were left out.</item>
+    </plurals>
+    <plurals name="import_overrides">
+        <item quantity="one">%1$d change to a single occurrence wasn\'t brought over.</item>
+        <item quantity="other">%1$d changes to single occurrences weren\'t brought over.</item>
+    </plurals>
+    <string name="import_everyone_note">They\'re added for everyone. Open one to change who it\'s for or who\'s taking them.</string>
+    <string name="import_copy_note">These are copies. Changes in the other calendar won\'t follow.</string>
+    <string name="import_unmappable_note">Repeats in a way House Calendar can\'t show: %1$s</string>
+    <string name="import_refused_large">That file is too big to be a family calendar.</string>
+    <string name="import_refused_many">That file has more than 500 events. Try a smaller one.</string>
+    <string name="import_refused_not_calendar">That isn\'t a calendar file.</string>
+    <string name="import_nothing">There\'s nothing to add in that.</string>
+    <string name="import_done">Added</string>
+    <string name="import_phone_calendars_title">From this phone\'s calendars</string>
+    <string name="import_phone_calendars_body">The next 8 weeks from every calendar on this phone. Untick what you don\'t want.</string>
+    <string name="import_permission_body">To copy events, House Calendar needs to read this phone\'s calendars. It only reads them now, when you ask.</string>
+
+    <!-- Export and import (SPEC FR-48) -->
+    <string name="backup_body">A copy of the whole calendar in one file, locked with a passphrase. Keep it somewhere safe; you can bring it into a device of this family.</string>
+    <string name="backup_passphrase">Passphrase</string>
+    <string name="backup_passphrase_hint">At least 8 characters</string>
+    <string name="backup_export">Export to a file</string>
+    <string name="backup_import">Bring in an export file</string>
+    <string name="backup_working">Working… this takes a few seconds on purpose, to protect the passphrase.</string>
+    <string name="backup_exported">Exported.</string>
+    <plurals name="backup_imported">
+        <item quantity="one">Brought in. %1$d change was new.</item>
+        <item quantity="other">Brought in. %1$d changes were new.</item>
+    </plurals>
+    <string name="backup_wrong_passphrase">That passphrase doesn\'t open this file, or the file has been changed.</string>
+    <string name="backup_corrupt">That isn\'t a House Calendar export.</string>
+    <string name="backup_other_family">That export is from another family\'s calendar, so it can\'t be brought in here.</string>
+    <string name="backup_empty">That export is empty.</string>
+    <string name="joining_restore">Restore from an export file instead</string>
 </resources>

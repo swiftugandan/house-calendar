@@ -70,6 +70,7 @@ kotlin {
 
 dependencies {
     implementation(project(":schedule"))
+    implementation(project(":intake"))
     implementation(project(":sync"))
     implementation(project(":data"))
     implementation(project(":nearby"))
