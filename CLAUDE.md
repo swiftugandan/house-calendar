@@ -10,7 +10,10 @@ It is the sibling of House Points (`../house-points`). The sync stack (`:sync`, 
 
 ## Current phase
 
-Phase 6, implementation. Spec v0.1.1, SAD v0.1.0, contracts frozen at 0.1.0, plan v0.1.0. Implementing `:schedule` next (PLAN.md §1).
+Phase 6, implementation, **done on the emulators**. Spec v0.1.1, SAD v0.1.0, contracts frozen at 0.1.0, plan v0.1.0.
+- Every module is merged to `main`.
+- What is verified where, and what waits for physical devices, is in `REVIEW.md`.
+- All user-visible words live in `app/src/main/res/values/strings.xml`. View models emit structure, never sentences.
 
 ## Quick status
 

@@ -8,6 +8,10 @@ The family calendar from the kitchen wall, on an Android tablet in the same spot
 
 There's no account, no server and no internet. The devices sync with each other directly over the home Wi-Fi, or over Bluetooth. House Calendar is the sibling of [House Points](../house-points).
 
+## Status
+
+Version 1 is complete and verified on emulators (phone and 10" tablet): events and activities, term time, lifts, reminders, sync, display mode, adding from other apps, and export. Sync over real Wi-Fi, the Bluetooth fallback, and running on the actual kitchen tablet still need physical devices. See [REVIEW.md](REVIEW.md). Screens are in [docs/screens/](docs/screens/).
+
 ## How it's built
 
 Every calendar is a pure function of an append-only log of operations. Devices exchange the operations they're missing, and two devices holding the same operations always show the same calendar.
