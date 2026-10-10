@@ -84,7 +84,7 @@ public data class CalendarState(
     internal fun liveSeries(): List<Series> = liveSeriesList
 
     /** Orders members as [allMembers] lists them; ids of unknown members come last, by id. */
-    internal val memberOrder: Comparator<MemberId> = Comparator { a, b ->
+    public val memberOrder: Comparator<MemberId> = Comparator { a, b ->
         val first = members[a]?.created
         val second = members[b]?.created
         when {
