@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The organiser page: binding rings, a ruled grid, and one day circled in pen (DESIGN.md "The pen ring").
+     Drawn on the 108dp adaptive-icon canvas, inside the 66dp safe zone. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="#00000000" android:strokeColor="#FFFFFF" android:strokeWidth="3.5"
+        android:strokeLineJoin="round" android:pathData="M30,34 h48 a4,4 0 0 1 4,4 v34 a4,4 0 0 1 -4,4 h-48 a4,4 0 0 1 -4,-4 v-34 a4,4 0 0 1 4,-4 z" />
+    <path android:fillColor="#00000000" android:strokeColor="#FFFFFF" android:strokeWidth="3.5"
+        android:strokeLineCap="round" android:pathData="M42,29 v10 M66,29 v10" />
+    <path android:fillColor="#00000000" android:strokeColor="#FFFFFF" android:strokeWidth="2"
+        android:strokeLineCap="round" android:pathData="M27,46 h54 M27,58 h54 M43,46 v30 M59,46 v30" />
+    <path android:fillColor="#00000000" android:strokeColor="#FF8F6B" android:strokeWidth="3.5"
+        android:strokeLineCap="round" android:pathData="M60.5,62.5 c4.5,-2.5 10.5,-1 11.5,3.5 c1,4.5 -3.5,8 -8.5,8 c-5,0 -7.5,-3.5 -6.5,-7 c0.6,-2 2.6,-3.2 4.6,-3.8" />
+</vector>

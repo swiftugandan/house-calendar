@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Every word the app shows (SPEC NFR-OPS-2). Voice: plain, warm, specific (PRODUCT.md "Voice"). -->
+<resources>
+    <!-- Day words (DESIGN.md "Copy patterns") -->
+    <string name="today">Today</string>
+    <string name="tomorrow">Tomorrow</string>
+    <string name="all_day">All day</string>
+    <string name="everyone">Everyone</string>
+    <string name="group_disc">All</string>
+    <string name="now">Now</string>
+    <string name="next">Next</string>
+    <string name="until_time">until %1$s</string>
+    <string name="nothing_on_today">Nothing on today</string>
+    <string name="nothing_on">Nothing on</string>
+    <string name="time_range">%1$s–%2$s</string>
+    <string name="time_range_next_day">%1$s–%2$s %3$s</string>
+    <string name="continues">continues</string>
+
+    <!-- Taking (SPEC FR-11) -->
+    <string name="taking_person">%1$s taking</string>
+    <string name="needs_someone">Needs someone</string>
+    <string name="taking_label">Taking</string>
+    <string name="taking_them">Taking %1$s</string>
+    <string name="taking_not_needed">Not needed</string>
+    <string name="taking_someone_else">Someone else…</string>
+    <string name="ill_take">I\'ll take</string>
+    <string name="take_as">%1$s takes</string>
+    <plurals name="need_someone_count">
+        <item quantity="one">%1$d needs someone in the next fortnight</item>
+        <item quantity="other">%1$d need someone in the next fortnight</item>
+    </plurals>
+    <string name="needs_someone_title">Needs someone</string>
+    <string name="needs_someone_empty">Every lift in the next fortnight has someone.</string>
+
+    <!-- Clashes (SPEC FR-34) -->
+    <string name="clash_line">%1$s is also down for %2$s at %3$s</string>
+
+    <!-- Views -->
+    <string name="view_agenda">Agenda</string>
+    <string name="view_week">Week</string>
+    <string name="view_month">Month</string>
+    <string name="view_today">Today</string>
+    <string name="filter_everyone">Everyone</string>
+    <string name="add">Add</string>
+    <string name="settings">Settings</string>
+    <string name="back">Back</string>
+    <string name="close">Close</string>
+    <string name="more_count">+%1$d more</string>
+    <string name="previous_month">Previous month</string>
+    <string name="next_month">Next month</string>
+    <string name="previous_week">Previous week</string>
+    <string name="next_week">Next week</string>
+    <string name="this_week">This week</string>
+
+    <!-- Add sheet (SPEC FR-12; DESIGN.md "Add sheet") -->
+    <string name="what">What</string>
+    <string name="what_hint">Swimming, dentist, party…</string>
+    <string name="who">Who</string>
+    <string name="when">When</string>
+    <string name="repeat">Repeat</string>
+    <string name="more_details">Place, notes and reminders</string>
+    <string name="place">Place</string>
+    <string name="place_hint">Leisure Centre</string>
+    <string name="notes">Notes</string>
+    <string name="notes_hint">Bring goggles</string>
+    <string name="reminders">Reminders</string>
+    <string name="pick_date">Pick a date</string>
+    <string name="starts">Starts</string>
+    <string name="ends">Ends</string>
+    <string name="ends_day">Ends on</string>
+    <string name="term_time_only">Not in school holidays</string>
+    <string name="term_time_only_hint">Skips the holidays you\'ve entered</string>
+    <string name="repeat_never">Never</string>
+    <string name="repeat_daily">Every day</string>
+    <string name="repeat_weekly">Every week</string>
+    <string name="repeat_fortnightly">Every 2 weeks</string>
+    <string name="repeat_monthly_day">Every month on the %1$s</string>
+    <string name="repeat_monthly_weekday">Every month on the %1$s %2$s</string>
+    <string name="repeat_monthly_last">Every month on the last %1$s</string>
+    <string name="repeat_yearly">Every year on %1$s</string>
+    <string name="repeat_custom">As it was set up</string>
+    <string name="ends_never">Never</string>
+    <string name="ends_on">On a date</string>
+    <string name="ends_after">After</string>
+    <plurals name="ends_after_times">
+        <item quantity="one">After %1$d time</item>
+        <item quantity="other">After %1$d times</item>
+    </plurals>
+    <string name="suggestions">From before</string>
+    <string name="icon">Picture</string>
+    <string name="no_icon">None</string>
+    <string name="add_outcome">Add %1$s · %2$s</string>
+    <string name="add_outcome_untitled">Add to %1$s</string>
+    <string name="add_outcome_weekly">Add %1$s · %2$s from %3$s</string>
+    <string name="add_outcome_repeating">Add %1$s · repeats from %2$s</string>
+    <string name="save_outcome">Save %1$s</string>
+    <string name="who_needed">Choose who it\'s for</string>
+    <string name="title_needed">Give it a title</string>
+
+    <!-- Reminders (SPEC FR-36) -->
+    <string name="reminder_none">No reminder</string>
+    <plurals name="reminder_minutes">
+        <item quantity="one">%1$d minute before</item>
+        <item quantity="other">%1$d minutes before</item>
+    </plurals>
+    <plurals name="reminder_hours">
+        <item quantity="one">%1$d hour before</item>
+        <item quantity="other">%1$d hours before</item>
+    </plurals>
+    <string name="reminder_at_start">At the start</string>
+    <string name="reminder_day_before_at">The day before at %1$s</string>
+    <string name="reminder_on_day_at">On the day at %1$s</string>
+    <plurals name="reminder_days_before_at">
+        <item quantity="one">%1$d day before at %2$s</item>
+        <item quantity="other">%1$d days before at %2$s</item>
+    </plurals>
+    <string name="reminder_add">Add a reminder</string>
+
+    <!-- Repeat summaries (DESIGN.md "Copy patterns") -->
+    <string name="summary_daily">Every day</string>
+    <string name="summary_every_n_days">Every %1$d days</string>
+    <string name="summary_weekly">Every %1$s</string>
+    <string name="summary_fortnightly">Every other %1$s</string>
+    <string name="summary_every_n_weeks">Every %1$d weeks on %2$s</string>
+    <string name="summary_monthly_day">Every month on the %1$s</string>
+    <string name="summary_monthly_weekday">Every month on the %1$s %2$s</string>
+    <string name="summary_monthly_last">Every month on the last %1$s</string>
+    <string name="summary_every_n_months">Every %1$d months</string>
+    <string name="summary_yearly">Every year on %1$s</string>
+    <string name="summary_every_n_years">Every %1$d years</string>
+    <string name="summary_term_time">%1$s in term time</string>
+    <string name="summary_until">%1$s, until %2$s</string>
+    <string name="summary_unrecognised">Repeats in a way this version can\'t show. Update the app on this device.</string>
+    <string name="and_separator">%1$s and %2$s</string>
+    <string name="list_separator">, </string>
+    <string name="ordinal_1">first</string>
+    <string name="ordinal_2">second</string>
+    <string name="ordinal_3">third</string>
+    <string name="ordinal_4">fourth</string>
+
+    <!-- Scope question (SPEC FR-15, FR-16; DESIGN.md "Scope question") -->
+    <string name="scope_change_title">Change which?</string>
+    <string name="scope_delete_title">Delete which?</string>
+    <string name="scope_only">Only %1$s</string>
+    <string name="scope_following">%1$s and every %2$s after</string>
+    <string name="scope_following_generic">%1$s and the ones after</string>
+    <string name="scope_all">Every %1$s</string>
+    <string name="scope_unavailable_move">Only this one or every time can move to another day</string>
+
+    <!-- Event detail -->
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="delete_event">Delete %1$s</string>
+    <string name="added_by">Added by %1$s</string>
+    <string name="changed_by">Last changed by %1$s</string>
+    <string name="this_device">this device</string>
+    <string name="a_device">a device</string>
+    <string name="moved_note">Moved from its usual day</string>
+    <string name="reminders_none_set">No reminders</string>
+    <string name="for_people">For %1$s</string>
+
+    <!-- Recently deleted (SPEC FR-17) -->
+    <string name="recently_deleted">Recently deleted</string>
+    <string name="recently_deleted_empty">Nothing has been deleted.</string>
+    <string name="deleted_by">Deleted by %1$s</string>
+    <string name="restore">Restore</string>
+    <string name="restored">%1$s is back</string>
+    <string name="undo">Undo</string>
+    <string name="deleted_snack">%1$s deleted</string>
+
+    <!-- Onboarding (SPEC FR-1, FR-4, FR-5) -->
+    <string name="welcome_title">The family calendar, on the kitchen wall and in your pocket</string>
+    <string name="welcome_body">Everything stays on your own devices. They keep each other up to date over your home Wi-Fi, with no account and no internet.</string>
+    <string name="welcome_start">Start a family calendar</string>
+    <string name="welcome_join">Join one from another device</string>
+    <string name="family_name">Family name</string>
+    <string name="family_name_hint">The Okellos</string>
+    <string name="people_title">Who\'s on the calendar?</string>
+    <string name="people_body">Everyone in the house: adults and children. Children don\'t need a device.</string>
+    <string name="person_name_hint">Name</string>
+    <string name="adult">Adult</string>
+    <string name="child">Child</string>
+    <string name="add_person">Add %1$s</string>
+    <string name="add_another">Add someone</string>
+    <string name="this_device_title">This device</string>
+    <string name="role_phone">A phone</string>
+    <string name="role_phone_body">Someone\'s own phone, with their reminders</string>
+    <string name="role_display">The kitchen display</string>
+    <string name="role_display_body">A shared tablet on the wall that shows the family\'s week</string>
+    <string name="whose_phone">Whose phone is this?</string>
+    <string name="device_name">Name for this device</string>
+    <string name="device_name_phone_default">%1$s\'s phone</string>
+    <string name="device_name_display_default">Kitchen</string>
+    <string name="create_family">Start the calendar</string>
+    <string name="continue_">Continue</string>
+    <string name="join_title">Join the family</string>
+    <string name="join_body">On a device that\'s already in the family, open Settings, then Devices, and show the code.</string>
+    <string name="join_scan">Scan the code</string>
+    <string name="join_paste">Or type the code</string>
+    <string name="join_use_code">Use this code</string>
+    <string name="join_bad_code">That isn\'t a House Calendar code. House Points codes don\'t work here.</string>
+    <string name="join_scanner_unavailable">The scanner isn\'t available. Type the code shown under the QR instead.</string>
+    <string name="joining_title">Joining the family</string>
+    <string name="joining_body">Keep House Calendar open on a device that\'s already in the family, on the same Wi-Fi. The calendar comes across by itself.</string>
+    <string name="joining_bluetooth">Not on the same Wi-Fi? Use Bluetooth</string>
+    <string name="joining_whose">Last step: whose phone is this?</string>
+
+    <!-- Sync (SPEC FR-41 to FR-46) -->
+    <string name="sync_title">Devices</string>
+    <string name="sync_up_to_date_with">Up to date with %1$s · %2$s</string>
+    <string name="sync_never">Not synced with another device yet</string>
+    <string name="sync_running">Syncing with %1$s…</string>
+    <string name="sync_now">Sync now</string>
+    <string name="sync_look">Look for devices on this Wi-Fi</string>
+    <string name="sync_bluetooth">Use Bluetooth instead</string>
+    <string name="sync_searching">Looking for the family\'s devices…</string>
+    <string name="sync_found">Found %1$s</string>
+    <string name="sync_done_with">Synced with %1$s</string>
+    <plurals name="sync_new_ops">
+        <item quantity="zero">Nothing new</item>
+        <item quantity="one">%1$d change came in</item>
+        <item quantity="other">%1$d changes came in</item>
+    </plurals>
+    <string name="sync_failed_link">The devices lost touch before they finished. Anything that arrived is kept; try again to send the rest.</string>
+    <string name="sync_failed_bluetooth">This device couldn\'t use Bluetooth or Wi-Fi to look for the others. Check Bluetooth, Wi-Fi and Location are on, then try again.</string>
+    <string name="sync_rejected">That device isn\'t in this family, or has an old key. Pair it again with the code.</string>
+    <string name="sync_done">Done</string>
+    <string name="show_code">Show the code to add a device</string>
+    <string name="show_code_body">Scan this on the new device, or type the code under it.</string>
+    <string name="last_synced">Last synced %1$s</string>
+    <string name="not_synced_yet">Not synced yet</string>
+    <string name="remove_device">Remove this device</string>
+    <string name="remove_device_body">For a lost or replaced device. Everything it added stays. The remaining devices pair again with a new code.</string>
+    <string name="newer_version_notice">Another device is running a newer House Calendar. Things it adds that this version can\'t show are kept safely.</string>
+    <string name="role_phone_short">Phone</string>
+    <string name="role_display_short">Kitchen display</string>
+    <string name="you">you</string>
+
+    <!-- Relative times -->
+    <string name="just_now">just now</string>
+    <plurals name="minutes_ago">
+        <item quantity="one">%1$d min ago</item>
+        <item quantity="other">%1$d min ago</item>
+    </plurals>
+    <plurals name="hours_ago">
+        <item quantity="one">%1$d h ago</item>
+        <item quantity="other">%1$d h ago</item>
+    </plurals>
+    <plurals name="days_ago">
+        <item quantity="one">yesterday</item>
+        <item quantity="other">%1$d days ago</item>
+    </plurals>
+
+    <!-- Settings -->
+    <string name="settings_family">Family</string>
+    <string name="settings_people">People</string>
+    <string name="settings_holidays">School holidays</string>
+    <string name="settings_devices">Devices and sync</string>
+    <string name="settings_reminders">Reminders on this phone</string>
+    <string name="settings_display">Kitchen display</string>
+    <string name="settings_export">Export and import</string>
+    <string name="settings_diagnostics">Diagnostics</string>
+    <string name="settings_import_calendar">Copy from this phone\'s calendars</string>
+    <string name="timezone">Timezone</string>
+    <string name="week_starts">Week starts on</string>
+    <string name="archive">Archive</string>
+    <string name="unarchive">Bring back</string>
+    <string name="archived">Archived</string>
+    <string name="rename">Rename</string>
+    <string name="colour">Colour</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="holiday_name_hint">Half term</string>
+    <string name="holiday_add">Add a holiday</string>
+    <string name="holiday_from">From</string>
+    <string name="holiday_to">To</string>
+    <string name="holidays_empty">No holidays yet. Add your school\'s holidays and term-time activities skip them.</string>
+    <string name="reminders_mine">Things I\'m in or taking</string>
+    <string name="reminders_everyone">Everyone\'s events</string>
+    <string name="reminders_off">No reminders</string>
+    <string name="display_day_hours">Day hours</string>
+    <string name="display_day_hours_body">Outside these hours the display shows only a dim clock.</string>
+    <string name="display_home">Shows when idle</string>
+    <string name="display_size">Text size check</string>
+    <string name="display_size_body">The bar should measure 5 cm. If it doesn\'t, adjust until it does.</string>
+    <string name="display_pin">Keep this app on screen</string>
+    <string name="display_pin_body">Screen pinning stops the display wandering off. Anyone can still leave it by holding Back and Recent apps.</string>
+    <string name="settings_hold">Hold to open settings</string>
+    <string name="unlock_settings">Unlock to change settings</string>
+
+    <!-- Reminders (notifications) -->
+    <string name="reminder_channel">Reminders</string>
+    <string name="reminder_channel_description">Reminders for the things you\'re in or taking someone to.</string>
+    <string name="reminder_title">%1$s · %2$s</string>
+    <string name="reminder_you_are_taking">You\'re taking %1$s</string>
+    <string name="reminder_you_are_in">%1$s</string>
+    <string name="reminder_late">Late: %1$s</string>
+    <string name="reminder_all_day">%1$s · all day</string>
+</resources>

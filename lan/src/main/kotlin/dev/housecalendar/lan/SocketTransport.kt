@@ -3,7 +3,10 @@ package dev.housecalendar.lan
 import dev.housecalendar.contracts.FamilyId
 import dev.housecalendar.sync.Transport
 import dev.housecalendar.sync.TransportClosedException
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -43,19 +46,32 @@ public class SocketTransport(private val socket: Socket) : Transport {
         }
     }
 
-    override suspend fun receive(): ByteArray? = withContext(Dispatchers.IO) {
+    /**
+     * A blocking socket read ignores coroutine cancellation, so a caller's timeout (SyncSession's receive
+     * timeout) could never end it. The read runs as a child, and cancelling the caller closes the socket,
+     * which ends the read with an exception: the session gives up instead of hanging (and holding its lock).
+     */
+    override suspend fun receive(): ByteArray? = coroutineScope {
+        val reading = async(Dispatchers.IO) { readFrame() }
         try {
-            val length = input.readInt()
-            if (length < 0 || length > MAX_FRAME_BYTES) {
-                socket.close()
-                null
-            } else {
-                ByteArray(length).also(input::readFully)
-            }
-        } catch (e: IOException) {
-            // End of stream or a reset: either way the transport is closed (Transport contract).
-            null
+            reading.await()
+        } catch (e: CancellationException) {
+            socket.close()
+            throw e
         }
+    }
+
+    private fun readFrame(): ByteArray? = try {
+        val length = input.readInt()
+        if (length < 0 || length > MAX_FRAME_BYTES) {
+            socket.close()
+            null
+        } else {
+            ByteArray(length).also(input::readFully)
+        }
+    } catch (e: IOException) {
+        // End of stream, a reset, or the socket closed by a cancelled receive: the transport is closed.
+        null
     }
 
     override suspend fun close(): Unit = withContext(Dispatchers.IO) {
