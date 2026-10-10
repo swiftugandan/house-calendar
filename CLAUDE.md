@@ -10,7 +10,7 @@ It is the sibling of House Points (`../house-points`). The sync stack (`:sync`, 
 
 ## Current phase
 
-Phase 0: discipline installed.
+Phase 6, implementation. Spec v0.1.1, SAD v0.1.0, contracts frozen at 0.1.0, plan v0.1.0. Implementing `:schedule` next (PLAN.md §1).
 
 ## Quick status
 
