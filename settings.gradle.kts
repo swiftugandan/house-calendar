@@ -17,3 +17,4 @@ dependencyResolutionManagement {
 rootProject.name = "house-calendar"
 
 include(":contracts")
+include(":schedule")
