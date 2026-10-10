@@ -14,6 +14,8 @@ Modules are listed in dependency order. Each one follows the cycle in `ENGINEERI
 
 There are no cycles. `:schedule`, `:intake` and `:sync` are independent of each other, and only `:app` combines them.
 
+**Order as built (recorded 2026-10-10).** `:schedule`, `:sync`, `:data`, `:lan` and `:nearby` were built in DAG order. `:intake` comes after `:app` milestones 1 to 6 and before milestone 7, which is the first one that consumes it. The DAG allows this, and it gets a running app onto the emulators sooner.
+
 ## 1. `:schedule` (pure JVM)
 
 - **Depends on:** `:contracts`.
