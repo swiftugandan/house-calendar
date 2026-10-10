@@ -145,7 +145,7 @@ Line height is 1.2 × size for `detail` and 1.1 × size for `glance`.
   - `raised`, for cards: a 1 dp contact shadow at 5% plus an 8 dp ambient at 6%
   - `floating`, for sheets, the Add pill and the segmented thumb: a 2 dp contact at 8% plus a 24 dp ambient at 12%.
 - **Depth, dark:** shadows vanish on a dark ground, so cards are lifted by tone (`surface` on `ground`) and a 1 dp `rule` hairline instead.
-- **Grouped lists:** settings, detail and pickers group related rows into one `r-lg` card with hairlines between rows, as in iOS Settings. A card never sits inside another card.
+- **Grouped lists:** settings, detail and pickers group related rows into one `r-lg` card with hairlines between rows, as in iOS Settings. Hairlines start 50 dp in, after the row's glyph or tile. A card never sits inside another card.
 
 ## Iconography
 
@@ -153,7 +153,7 @@ Line height is 1.2 × size for `detail` and 1.1 × size for `glance`.
 - **Sizes:** UI icons are 24 dp. Event icons are 20 dp in phone lists and match the `detail` cap height on the display.
 - **Event icons** are keyed by an `IconKey` string stored in ops. The v1 catalogue, which is also the picker order: `swim`, `football`, `run`, `bike`, `dance`, `gym`, `music`, `art`, `book`, `school`, `graduation`, `doctor`, `tooth`, `pill`, `cake`, `party`, `gift`, `food`, `cook`, `shop`, `car`, `bus`, `train`, `plane`, `holiday`, `tent`, `home`, `work`, `phone`, `bin`, `recycle`, `wash`, `pet`, `vet`, `haircut`, `church`, `film`, `game`, `star`, `heart`.
 - **Keyword suggestions (SPEC FR-14)** map English words to those keys ("swim", "swimming", "pool" → `swim`; "dentist", "orthodontist" → `tooth`; "birthday" → `cake`). The table lives with the icons and is unit-tested.
-- In entry cards, the event icon sits in a 32 dp `r-sm` tile of the card's fill colour at 18%. Icons never sit in a tile above a heading.
+- In entry cards, the event icon sits in a 36 dp `r-sm` tile (52 dp in an event's detail) of the card's fill colour at 18%. Icons never sit in a tile above a heading.
 
 ## Components
 
@@ -225,7 +225,7 @@ The default focus is the first.
 
 | Screen | Wins the eye | Supporting |
 |---|---|---|
-| **Agenda (phone home)** | The Add button (bottom, full width, `action`) | Today's entries, the now line, the sync line, "2 need someone" |
+| **Agenda (phone home)** | The Add pill (floating at the bottom, `action`, `floating` shadow) | Today's entries, the now line, the sync line, "2 need someone" |
 | **Week (phone)** | Today's row | Day rows with entry lines |
 | **Month (phone)** | Today's ring | Per-person marks, up to 3 titles a day |
 | **Event detail** | Time, place and taking, as one block | Who, repeat summary, reminders, "Added by Sam's phone", clashes |
