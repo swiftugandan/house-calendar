@@ -1,85 +1,85 @@
 # Design
 
-The visual system for House Calendar, following [impeccable.style](https://impeccable.style) conventions. Product context is in `PRODUCT.md`. Every colour, font, size and radius used in the app must come from this file.
+The visual system for House Calendar (direction "Kitchen Light", v0.2), following [impeccable.style](https://impeccable.style) conventions. Product context is in `PRODUCT.md`. Every colour, font, size and radius used in the app must come from this file.
 
-## Direction: "Organiser"
+## Direction: "Kitchen Light" (v0.2)
 
-The app is the family organiser from the kitchen wall: a column for each person, a ruled row for each day, entries written as short lines of text, and today circled in pen. It is House Points' sibling. It shares the type families, the ink-and-paper neutrals and the action green, so the two apps look related on the same phone. The motif is carried by **the grid, the rules and the pen ring**, not by imitation paper. There's no paper texture, no torn edges and no handwriting font.
+The calendar as a well-made object: the cool, clear light of a kitchen in the morning, white cards resting on it, and each person's colour carried through everything that's theirs. It aims for the craft of first-party Apple apps and the best of Dribbble: confident type, real depth, generous space, and one idea about colour carried all the way through. It keeps the parts of "Organiser" that worked: the organiser grid on the wall, the pen ring, the empty disc, physical type sizes, and legibility as a requirement rather than a style.
 
-**Alternatives considered:**
-- **Fridge door:** sticky notes, magnets, a cork texture. *Rejected:* skeuomorphic clutter, illegible from across the room, and every note competes with every other.
-- **Productivity calendar:** an hour grid with coloured blocks, as in desktop calendar apps. *Rejected:*
-  - a 24-hour axis spends most of the screen on empty hours
-  - block colour is the only cue for whose event it is
-  - it is dense at 2 m
-  - it answers "when am I free?", where a family asks "where is everyone?"
-- **Smart display dashboard:** dark, with weather tiles, a big clock and photo backgrounds. *Rejected:* it is the hero-metric template, it needs the internet for half its tiles, it invites burn-in, and the calendar becomes one tile among many.
+**What "Organiser" (v0.1) got wrong.** It was principled but flat. It banned cards, depth and fills in a person's colour, so every screen became ink lines on grey paper. The one thing a family calendar has to say at a glance, *whose is this?*, was carried by a 20 dp disc. The rules kept it safe at the cost of making it look unfinished.
+
+**Alternatives considered for v0.2:**
+- **Dark smart-display dashboard:** big clock, photo background, glass tiles. *Rejected:* it's the hero-metric template, glass and photos fight legibility at 2 m, and it invites burn-in.
+- **Full-colour blocks**, as in Google Calendar's week view: saturated person-colour backgrounds with white text. *Rejected:* eight saturated colours in one week read as noise, and white text on mid-tones fails contrast for half the palette.
+- **Monochrome editorial:** black and white, oversized type, colour only on discs. *Rejected:* beautiful in a screenshot, but it hides the one thing families need, whose is what.
 
 **What makes it recognisable:**
-1. **The organiser grid.** People across the top, each with a coloured disc and name. Days down the side. Thin rules between them. The person's colour lives in their **header disc** and nowhere else in their column, so the content stays readable ink on paper.
-2. **The pen ring.** Today's date number is circled in `today` vermilion, as a parent would circle it on paper. The same colour draws the now line. It is never used for anything else.
-3. **The empty disc.** A lift that needs someone is a dashed, empty disc where the person would be. When someone takes it, the disc fills with their colour.
+1. **Person tint.** An entry that belongs to someone sits on a card tinted with their colour: 13% of it over white in light, 16% over the card tone in dark. Text stays `ink`, so contrast never depends on the hue. A whole week shows at a glance whose it is, without becoming a rainbow.
+2. **The colour rail.** Every entry card starts with a 4 dp vertical rail, split into one segment per person in it, in their full colour. "Everyone" entries carry every member's segment. It's the signature mark: a family, in one stroke.
+3. **The pen ring**, kept: today circled in coral, slightly irregular, the one hand-drawn gesture. Coral also draws the now line, and nothing else.
+4. **The empty disc**, kept: a dashed ring where a person would be, for a lift that still needs someone.
 
 ## Colour
 
-The palette is fixed. **Material dynamic colour is off**, because a person's colour must be identical on every device in the family.
-
-Neutrals are tinted towards blue-green ink, as in House Points. All contrast figures were computed with the WCAG 2.2 relative-luminance formula [SPEC R16]. The app's token contrast test (`TokensContrastTest`) recomputes them, so a token change that breaks a ratio fails the build.
+The palette is fixed. **Material dynamic colour is off**, because a person's colour must be identical on every device in the family. Neutrals are cool and faintly blue: never beige, never warm grey. Every pairing below is recomputed by `FoundationsTest` (WCAG 2.2 relative luminance [SPEC R16]), so a token change that breaks a ratio fails the build.
 
 ### Light
 
-| Token | Hex | Use | Contrast on paper |
+| Token | Hex | Use | Contrast |
 |---|---|---|---|
-| `paper` | `#F5F7F6` | App background; past-day rows | n/a |
-| `surface` | `#FFFFFF` | Sheets; today's row | n/a |
-| `sunk` | `#E9EEEC` | Pressed states, input wells, the month grid's other-month days | n/a |
-| `band` | `#E4EAE7` | Holiday and "everyone" bands | n/a |
-| `rule` | `#D3DAD7` | Grid rules, dividers, holiday hatching (decoration only, never the only cue) | n/a |
-| `ink` | `#18232B` | Text, times | 14.9:1 (13.1:1 on `band`) |
-| `ink-muted` | `#52606A` | Ended entries, secondary text, places | 6.0:1 (5.3:1 on `band`) |
-| `action` | `#1E6B4E` | The single primary action; confirmation | 6.0:1 (white on it 6.4:1) |
-| `today` | `#B3361C` | The pen ring and the now line, nothing else | 5.6:1 (white on it 6.1:1) |
+| `ground` | `#F2F4F6` | App background, behind cards | n/a |
+| `surface` | `#FFFFFF` | Cards, sheets, today's row on the wall | n/a |
+| `sunk` | `#E8ECEF` | Input wells, segmented-control track, pressed states | n/a |
+| `band` | `#EEF1F3` | Neutral cards: everyone, holidays, all-day | n/a |
+| `rule` | `#DCE2E6` | Hairlines, card borders in dark, holiday hatching | n/a |
+| `ink` | `#0E161D` | Text, icons | ≥ 15.4:1 on every ground |
+| `ink-muted` | `#55616C` | Secondary text | ≥ 5.3:1 on every ground, ≥ 5.2:1 on every tint |
+| `action` | `#0E161D` | Primary buttons: an ink pill | white on it 18.2:1 |
+| `today` | `#C2351B` | The pen ring, the now line and its time | ≥ 4.6:1 on every ground; white on it 5.5:1 |
 
 ### Dark
 
-| Token | Hex | Contrast on ground |
+| Token | Hex | Contrast |
 |---|---|---|
-| `ground` | `#121A1F` | n/a |
-| `surface` | `#1B252B` | n/a |
-| `sunk` | `#243037` | n/a |
-| `band` | `#22303A` | n/a |
-| `rule` | `#2C3940` | n/a |
-| `ink` | `#E6EDEA` | 14.8:1 |
-| `ink-muted` | `#A3B1AB` | 7.9:1 |
-| `action` | `#6CC9A0` (text `#0D1A14`, 8.9:1) | 8.8:1 |
-| `today` | `#FF8F6B` (text `#1A0D08`, 8.5:1) | 7.9:1 |
-
-The display uses dark from 30 minutes before the end of day hours, and outside day hours its night screen is `ground`, with `ink-muted` text at minimum brightness. Phones follow the system setting.
+| `ground` | `#0B0F13` | n/a |
+| `surface` | `#161C22` | n/a |
+| `sunk` | `#1F272E` | n/a |
+| `band` | `#1A2128` | n/a |
+| `rule` | `#28313A` | n/a |
+| `ink` | `#EEF2F4` | ≥ 13.4:1 |
+| `ink-muted` | `#9EAAB4` | ≥ 6.4:1, ≥ 5.0:1 on every tint |
+| `action` | `#EEF2F4`, a light pill, text `#0B0F13` | 17.1:1 |
+| `today` | `#FF7B5C`, text `#1A0B06` | ≥ 5.9:1 |
 
 ### Member colours
 
-There are 8, assigned in order and reused cyclically after that. The first 6 are House Points' child colours, so a child has the same colour in both apps.
+There are 8, assigned in order and reused cyclically. They're unchanged from v0.1, and the first 6 are House Points' child colours, so a child has the same colour in both apps.
 
-| Token | Light | Dark | White on light | Light on paper | Dark on ground |
-|---|---|---|---|---|---|
-| `member-1` | `#2456A6` | `#8DB4F2` | 7.1:1 | 6.6:1 | 8.3:1 |
-| `member-2` | `#0E6E73` | `#6FCFD3` | 6.0:1 | 5.6:1 | 9.7:1 |
-| `member-3` | `#7B3F8C` | `#D3A2E0` | 7.2:1 | 6.7:1 | 8.4:1 |
-| `member-4` | `#5C6B12` | `#BFD06A` | 5.9:1 | 5.5:1 | 10.4:1 |
-| `member-5` | `#4A44A8` | `#ADA9F5` | 7.8:1 | 7.3:1 | 8.2:1 |
-| `member-6` | `#A63A62` | `#F2A0BF` | 6.2:1 | 5.7:1 | 8.8:1 |
-| `member-7` | `#7A5A00` | `#E3B55B` | 6.4:1 | 5.9:1 | 9.2:1 |
-| `member-8` | `#3D5A73` | `#9DB8CF` | 7.2:1 | 6.7:1 | 8.5:1 |
+Each member colour has three uses:
+- **fill:** the disc behind the initials, and the rail segment.
+- **tint:** the card background, the fill blended over `surface` at 13% (light) or 16% (dark).
+- **accent:** text in the member's colour on `surface` or their tint: names on the wall's column headers.
 
-On dark, initials on a member disc are `ground` (all ≥ 8.2:1).
+| Token | Light fill | Light tint | Dark fill | Dark tint |
+|---|---|---|---|---|
+| `member-1` | `#2456A6` | `#E3E9F3` | `#8DB4F2` | `#293443` |
+| `member-2` | `#0E6E73` | `#E0ECED` | `#6FCFD3` | `#24393E` |
+| `member-3` | `#7B3F8C` | `#EEE6F0` | `#D3A2E0` | `#343140` |
+| `member-4` | `#5C6B12` | `#EAECE0` | `#BFD06A` | `#31392E` |
+| `member-5` | `#4A44A8` | `#E7E7F4` | `#ADA9F5` | `#2E3344` |
+| `member-6` | `#A63A62` | `#F3E5EB` | `#F2A0BF` | `#39313B` |
+| `member-7` | `#7A5A00` | `#EEEADE` | `#E3B55B` | `#37342B` |
+| `member-8` | `#3D5A73` | `#E6EAED` | `#9DB8CF` | `#2C353E` |
+
+Checked pairings: `ink` and `ink-muted` on every tint (≥ 14.9:1 and ≥ 5.2:1 light, ≥ 10.6:1 and ≥ 5.0:1 dark); each fill on its own tint (≥ 4.9:1); initials on fills (white ≥ 5.9:1 light, `ground` ≥ 8.0:1 dark).
 
 ### Colour rules
 
-- A member's colour appears on their **disc** and their **column header**, and as a 4 dp marker before entries in a mixed list (the agenda, the month). Never as an entry's background fill.
-- `today` is only the pen ring and the now line.
-- Clashes and "needs someone" are **never** coloured as warnings. They are ink text with a glyph.
-- Colour is never the only signal. Discs carry initials, and entries in mixed lists carry the person's name for TalkBack.
-- No gradients anywhere.
+- An entry belonging to one person sits on that person's **tint**. An entry for several people takes the **first** person's tint, and its rail shows all of them. An entry for everyone sits on `band`, with every member in its rail.
+- `today` is only the pen ring, the now line and its time.
+- Clashes and "needs someone" are **never** coloured as warnings. They're ink text with a glyph.
+- Colour is never the only signal. Discs carry initials, rails sit beside discs or names, and every entry's spoken description names its people.
+- No gradients, no glass, no glow.
 
 ## Typography
 
@@ -95,15 +95,16 @@ There are three families, the same as House Points, all under the SIL Open Font 
 
 | Token | Size / line height | Family and weight | Use |
 |---|---|---|---|
-| `headline` | 26 / 32 | Bricolage 600 | Screen titles, the day heading on the agenda |
-| `title` | 18 / 24 | Atkinson Next 700 | Entry titles, sheet sections |
-| `body` | 16 / 24 | Atkinson Next 400 | Notes, explanations |
-| `label` | 14 / 20 | Atkinson Next 700 | Buttons, segmented controls, section labels |
+| `large-title` | 34 / 40 | Bricolage 700, −1% tracking | The home screen's day ("Saturday"), screen titles on first-level pages |
+| `headline` | 24 / 30 | Bricolage 700 | Day headings for today and tomorrow, sheet titles, top bars |
+| `title` | 17 / 22 | Atkinson Next 700 | Entry titles, section headings |
+| `body` | 16 / 24 | Atkinson Next 400 | Notes, explanations, list rows |
+| `label` | 15 / 20 | Atkinson Next 700 | Buttons, chips, segmented controls |
 | `caption` | 14 / 20 | Atkinson Next 400, `ink-muted` | Place, "Sam taking", sync line |
-| `time` | 16 / 24 | Atkinson Next 400, tabular | Times in lists |
+| `time` | 15 / 20 | Atkinson Next 700, tabular | An entry's start time |
 | `time-strong` | 18 / 24 | Atkinson Next 700, tabular | The time in an event's detail |
 
-The smallest text anywhere on a phone is 14 sp. There's no all-caps text. Headings never use italics.
+The smallest text anywhere on a phone is 14 sp. There's no all-caps text, except the three-letter weekday heads of the month grid. Headings never use italics.
 
 ### Display type: sized in millimetres
 
@@ -133,10 +134,18 @@ Line height is 1.2 × size for `detail` and 1.1 × size for `glance`.
 
 ## Space and shape
 
-- **Spacing scale (dp):** 4, 8, 12, 16, 24, 32, 48. The phone's side margin is 16. The display's is 24. Related items use 8; separate groups use 24 or more.
-- **Radius:** `r-sm` 4 dp (inputs, segmented controls, entry markers), `r-md` 12 dp (sheets, buttons), `r-full` (discs, the pen ring). Nothing else.
-- **Depth:** only sheets lift, with one shadow token. Everything else is separated by tone (`paper` vs `surface` vs `band`) or rules.
-- **No cards.** Entries are lines in a ruled grid or list. A sheet is the only container that floats.
+- **Spacing scale (dp):** 4, 8, 12, 16, 24, 32, 48. The phone's side margin is 16 (20 inside grouped lists). The display's is 24. Related items use 8; separate groups use 24 or more.
+- **Radius:**
+  - `r-sm` 8 dp: chips' inner elements, icon tiles, the segmented thumb
+  - `r-md` 14 dp: inputs, buttons that aren't pills, month tiles
+  - `r-lg` 22 dp: cards and entry cards
+  - `r-sheet` 28 dp: the top corners of sheets
+  - `r-full`: discs, pills, the pen ring.
+- **Depth, light:** two shadow tokens, both cool-tinted (`#0E161D`):
+  - `raised`, for cards: a 1 dp contact shadow at 5% plus an 8 dp ambient at 6%
+  - `floating`, for sheets, the Add pill and the segmented thumb: a 2 dp contact at 8% plus a 24 dp ambient at 12%.
+- **Depth, dark:** shadows vanish on a dark ground, so cards are lifted by tone (`surface` on `ground`) and a 1 dp `rule` hairline instead.
+- **Grouped lists:** settings, detail and pickers group related rows into one `r-lg` card with hairlines between rows, as in iOS Settings. A card never sits inside another card.
 
 ## Iconography
 
@@ -144,41 +153,47 @@ Line height is 1.2 × size for `detail` and 1.1 × size for `glance`.
 - **Sizes:** UI icons are 24 dp. Event icons are 20 dp in phone lists and match the `detail` cap height on the display.
 - **Event icons** are keyed by an `IconKey` string stored in ops. The v1 catalogue, which is also the picker order: `swim`, `football`, `run`, `bike`, `dance`, `gym`, `music`, `art`, `book`, `school`, `graduation`, `doctor`, `tooth`, `pill`, `cake`, `party`, `gift`, `food`, `cook`, `shop`, `car`, `bus`, `train`, `plane`, `holiday`, `tent`, `home`, `work`, `phone`, `bin`, `recycle`, `wash`, `pet`, `vet`, `haircut`, `church`, `film`, `game`, `star`, `heart`.
 - **Keyword suggestions (SPEC FR-14)** map English words to those keys ("swim", "swimming", "pool" → `swim`; "dentist", "orthodontist" → `tooth`; "birthday" → `cake`). The table lives with the icons and is unit-tested.
-- Icons never sit in a tinted tile above a heading.
+- In entry cards, the event icon sits in a 32 dp `r-sm` tile of the card's fill colour at 18%. Icons never sit in a tile above a heading.
 
 ## Components
 
-**Person disc.** A filled circle in the member's colour, with the initial in Bricolage 700 at about 45% of its diameter. The size is 40 dp in pickers and headers, 20 dp inline, and `detail` cap height × 1.6 on the display.
+**Person disc.** A filled circle in the member's colour, with the initial in Bricolage 700 at about 45% of its diameter. The size is 40 dp in pickers and headers, 18 to 24 dp inline, and `detail` cap height × 1.6 on the display. A disc overlapping another carries a 2 dp ring of the surface behind it, so stacks read as separate people.
+
+**Person chip.** In pickers and filters: an `r-full` pill holding the disc and name. Unselected, it's `surface` with a hairline. Selected, it fills with the person's tint and its border takes their colour, with a check.
+
+**Buttons.** The primary action is an `action` pill (56 dp, `label`), floating on phones with the `floating` shadow. Secondary actions are `surface` pills with a hairline. Destructive actions are ink text, never red.
+
+**Segmented control.** A `sunk` `r-full` track with a `surface` thumb carrying the `floating` shadow. The thumb slides between options (220 ms).
 - **Empty disc:** dashed 2 dp `ink-muted` ring, no fill, with the label "Needs someone".
 - **Group disc:** a ring of 2 dp `ink` with "All", for everyone.
 
-**Entry line (the core unit).** One line where it fits:
-- `time` in tabular figures (`ink-muted` once ended), a space, the event icon, then the title in `title` weight.
-- The second line, in `caption`, holds the place, then "· Sam taking" with a 20 dp disc, or "· Needs someone" with the empty disc.
-- A repeating occurrence adds the `repeat` glyph (12 dp) after the title.
-- In a member's column, other people involved appear as 20 dp discs at the end of the first line.
-- All-day entries have no time. They sit above timed ones with a 4 dp left marker in `rule`.
+**Entry card (the core unit).** An `r-lg` card on the owner's tint (or `band` for everyone), with the **colour rail** at its leading edge, inset 6 dp from the top and bottom:
+- **Phone:** the start time in `time` with the end below it in `caption` (a measured column, so 12-hour times never clip), the icon tile, then the title in `title` and a second line in `caption`: the place, then "· Sam taking" with a 18 dp disc, or "· Needs someone" with the empty disc. The people's discs stack at the trailing edge.
+- A repeating occurrence adds the `repeat` glyph after the title.
+- Ended entries fade to 55%. They're never hidden.
+- At a font scale of 1.5 or more, the times move to their own line above the title.
 
 **Organiser grid (display Week view).**
-- **Day label column:** the weekday in `detail` and the day number in `glance-small`. Today's number gets the **pen ring**: a 2 dp `today` circle, slightly irregular (rotated 6°, 3% oval), the one hand-drawn gesture in the app.
-- **Rows:** past days are hidden, so the grid always starts today. Today's row is `surface`. The other rows are `paper`, with 1 dp `rule` lines between them.
-- **Everyone band:** occurrences for everyone are drawn once at the top of the day row as a `band` strip across all member columns, with "Everyone" as a group disc.
-- **Holiday band:** a day inside a holiday has its label cell hatched with 45° `rule` lines 6 dp apart and the holiday name in `caption`.
-- **"+N more":** the last line of a cell that overflows reads "+2 more" and opens that day.
+- **People row:** each column is headed by a `surface` pill holding the person's disc and their name in their accent colour.
+- **Day label column:** the weekday in `detail` and the day number in `detail-strong`. Today's number is larger and wears the **pen ring**.
+- **Rows:** the grid starts today. Today's row is a `surface` card with the `raised` shadow, so the day you're in lifts off the wall. Other rows sit on `ground`, separated by hairlines.
+- **Entries:** compact entry cards (`r-md`, the person's tint, a 3 dp rail), each holding the time and the title on one line, or two when the column is narrow.
+- **Everyone:** occurrences for everyone are one `band` card across all columns, with the full rail and the group disc.
+- **Holiday:** the day label is hatched with 45° `rule` lines, with the holiday name in `caption`.
+- **"+N more":** cells measure their entries as drawn, and the last line reads "+2 more" when the rest don't fit.
 
-**Today board (display Today view).** One row per member:
-- their disc and name (`glance`)
-- **Now:** the current occurrence's title (`glance`) and "until 15:15" (`detail`)
-- **Next:** its time (tabular figures), its title, and "Sam taking" (`detail`).
+**Today board (display Today view).** A grid of person cards, each one on that person's tint, with a rail across its top:
+- the disc (glance size) and the name in their accent colour
+- **Now:** the current title in `glance`, with "until 15:15" in `detail`; or a quiet dash
+- **Next:** "Next · Tomorrow 12:00" in `detail`, the title in `detail-strong`, and who's taking.
 
-An everyone row comes first when an everyone occurrence is now or next.
+The grid is 1 card across for one person, 2 for 2 to 4, 3 for 5 or 6. A larger family scrolls a list. An everyone card leads when an everyone occurrence is now or next.
 
-**Agenda row (phone).**
-- `time` column, 56 dp wide.
-- A stack of the people's 20 dp discs, or the group disc.
-- The entry line.
-
-Day headings are sticky (`headline` for today and tomorrow, `title` for later days), with the holiday name in `caption` beside the date. The **now line** is a 2 dp `today` rule between the last started entry and the next one, with the time in `today` at its left.
+**Agenda (phone home).**
+- A `large-title` header: the weekday, with the date beneath in `caption` and today's day number in the pen ring.
+- Day headings are sticky: `headline` for today and tomorrow, `title` for later days, with the holiday beside the date.
+- Entry cards, 8 dp apart. The **now line** is a 2 dp `today` rule with a 6 dp dot at its start and the time in `today`.
+- "1 needs someone in the next fortnight" is a neutral card with the empty disc, above the list.
 
 **Add sheet.** A bottom sheet on phones. On the display it is a centred sheet 720 dp wide with 64 dp targets. Worked from top to bottom:
 1. **What:** the title field, focused, with suggestions from earlier events below it (SPEC FR-13) and the suggested icon at its start.
@@ -187,7 +202,7 @@ Day headings are sticky (`headline` for today and tomorrow, `title` for later da
 4. **Repeat:** Never / Every day / Every week (with weekday toggles) / Every 2 weeks / Every month (on the 13th, or on the 2nd Tuesday) / Every year / Custom. Then "Ends" (never / on a date / after N times), and **Term time only**, shown only when holidays exist.
 5. **Taking:** Not needed / Needs someone / an adult's disc (adults first, then "Someone else…").
 6. **More:** place, notes and reminders, folded.
-7. **Confirm:** one `action` button whose label says what will happen, for example "Add Swimming · Tuesdays from 13 Oct" or "Add Dentist · Thu 15 Oct 16:20". Never "Save" or "Done".
+7. **Confirm:** one `action` pill, floating at the bottom of the sheet, whose label says what will happen, for example "Add Swimming · Tuesdays from 13 Oct" or "Add Dentist · Thu 15 Oct 16:20". Never "Save" or "Done".
 
 A clash that the new event would create appears as one `caption` line above the button (SPEC FR-34).
 
@@ -232,17 +247,19 @@ The default focus is the first.
 
 ## Motion
 
-Motion is restrained and has a purpose. Every animation respects the system "remove animations" setting.
+Motion is quick, physical and has a purpose. Every animation respects the system "remove animations" setting.
 
 | Moment | Motion |
 |---|---|
-| Sheet open/close | Standard Material sheet motion, 250 ms, emphasised deceleration |
-| Switching views | Cross-fade 150 ms. Nothing slides. |
-| New entry appearing (local or synced) | Fades in over 150 ms. It doesn't move its neighbours. |
-| **A lift is taken** (the one moment of delight) | The empty disc's dashes close into a ring (120 ms), then it fills with the person's colour from the centre (200 ms, ease-out, no overshoot) |
+| Sheet open/close | Spring (damping 0.85, stiffness medium-low), no overshoot visible |
+| Segmented thumb | Slides to the chosen option, 220 ms, emphasised easing |
+| Switching views | Cross-fade 180 ms |
+| Pressing a card or button | Scales to 97% while held (spring back on release) |
+| New entry appearing (local or synced) | Fades in over 180 ms. It doesn't move its neighbours. |
+| **A lift is taken** (the one moment of delight) | The empty disc's dashes close into a ring (120 ms), then it fills with the person's colour from the centre (200 ms, ease-out) |
 | Pen ring on a new day | Drawn as a stroke, 400 ms, ease-in-out, the first time the display shows the new day |
 
-**Banned motion:** confetti, bounce or elastic easing, pulsing dots, shimmer placeholders (local data loads instantly), parallax, and animated size changes that move neighbouring elements.
+**Banned motion:** confetti, bounce or elastic overshoot, pulsing dots, shimmer placeholders (local data loads instantly), parallax, and animated size changes that move neighbouring elements.
 
 ## Copy patterns
 
@@ -266,5 +283,5 @@ The general impeccable slop checks apply. These bans are specific to this app:
 - Weather, news, photos or any tile that needs the internet.
 - Gradients, glassmorphism, glows, neon on dark, purple-to-cyan palettes, cream or beige surfaces.
 - Cards inside cards. Icon tiles above headings. Eyebrow chips. Numbered section labels.
-- A person's colour as an entry's background fill.
+- A person's full colour as an entry's background, or white text on a member colour anywhere but the disc. Fills are tints.
 - Inter, Roboto or other system fonts as the visible face, except in widgets, which can't load bundled fonts.
