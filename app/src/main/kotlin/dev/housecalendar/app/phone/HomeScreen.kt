@@ -68,6 +68,13 @@ import dev.housecalendar.app.ui.components.PersonDisc
 import dev.housecalendar.app.ui.components.Rule
 import dev.housecalendar.app.ui.components.Segmented
 import dev.housecalendar.app.ui.components.Words
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.ui.graphics.Color
+import dev.housecalendar.app.ui.theme.lifted
+import dev.housecalendar.app.ui.theme.Depth
+import dev.housecalendar.app.ui.components.HcCard
+import dev.housecalendar.app.ui.components.Pill
 import dev.housecalendar.app.ui.icons.HcIcons
 import dev.housecalendar.app.ui.theme.Hc
 import dev.housecalendar.app.ui.theme.Radius
@@ -98,27 +105,31 @@ fun HomeScreen(
     var filter by remember { mutableStateOf<MemberId?>(null) }
     val today = now.atZone(state.zone).toLocalDate()
     var selectedDay by remember { mutableStateOf(today) }
-    Column(Modifier.fillMaxSize()) {
-        Header(graph, state, now, onSettings)
-        Column(Modifier.padding(horizontal = Space.gutter), verticalArrangement = Arrangement.spacedBy(Space.s)) {
-            Segmented(
-                listOf(PhoneView.AGENDA to stringResource(R.string.view_agenda), PhoneView.WEEK to stringResource(R.string.view_week), PhoneView.MONTH to stringResource(R.string.view_month)),
-                view, { view = it },
-            )
-            FilterRow(state, filter) { filter = it }
-        }
-        val needs = remember(state, now.epochSecond / SECONDS_PER_MINUTE) { NeedsSomeoneModel.build(state, now) }
-        if (needs.isNotEmpty()) NeedsSomeoneLink(needs.size, onNeedsSomeone)
-        Box(Modifier.weight(1f)) {
-            when (view) {
-                PhoneView.AGENDA -> AgendaList(state, now, filter, onOpen)
-                PhoneView.WEEK -> WeekList(state, now, filter, onOpen)
-                PhoneView.MONTH -> MonthPane(state, now, filter, selectedDay, { selectedDay = it }, onOpen)
+    Box(Modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxSize()) {
+            Header(graph, state, now, onSettings)
+            Column(Modifier.padding(horizontal = Space.gutter), verticalArrangement = Arrangement.spacedBy(Space.m)) {
+                Segmented(
+                    listOf(PhoneView.AGENDA to stringResource(R.string.view_agenda), PhoneView.WEEK to stringResource(R.string.view_week), PhoneView.MONTH to stringResource(R.string.view_month)),
+                    view, { view = it },
+                )
+                FilterRow(state, filter) { filter = it }
+            }
+            val needs = remember(state, now.epochSecond / SECONDS_PER_MINUTE) { NeedsSomeoneModel.build(state, now) }
+            if (needs.isNotEmpty()) NeedsSomeoneLink(needs.size, onNeedsSomeone)
+            Box(Modifier.weight(1f)) {
+                when (view) {
+                    PhoneView.AGENDA -> AgendaList(state, now, filter, onOpen)
+                    PhoneView.WEEK -> WeekList(state, now, filter, onOpen)
+                    PhoneView.MONTH -> MonthPane(state, now, filter, selectedDay, { selectedDay = it }, onOpen)
+                }
             }
         }
+        // DESIGN.md "Buttons": Add floats over the list, so the list runs to the bottom of the screen.
         OutcomeButton(
             stringResource(R.string.add), { onAdd(if (view == PhoneView.MONTH) selectedDay else today) },
-            Modifier.navigationBarsPadding().padding(horizontal = Space.gutter, vertical = Space.m), icon = HcIcons.Plus,
+            Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = Space.l).widthIn(max = ADD_WIDTH).padding(horizontal = Space.gutter),
+            icon = HcIcons.Plus, floating = true,
         )
     }
 }
@@ -129,17 +140,25 @@ private fun Header(graph: AppGraph, state: CalendarState, now: Instant, onSettin
     val today = now.atZone(state.zone).toLocalDate()
     val history by graph.history.collectAsState()
     val syncing by graph.sync.state.collectAsState()
-    Row(Modifier.fillMaxWidth().statusBarsPadding().padding(start = Space.gutter, end = Space.xs, top = Space.s), verticalAlignment = Alignment.CenterVertically) {
-        Box(Modifier.size(52.dp), contentAlignment = Alignment.Center) {
-            Text(today.dayOfMonth.toString(), style = Hc.type.headline, color = Hc.colors.ink)
-            PenRing(52.dp)
-        }
-        Spacer(Modifier.width(Space.m))
+    val text = LocalDateText.current
+    Row(
+        Modifier.fillMaxWidth().statusBarsPadding().padding(start = Space.gutter + Space.xs, end = Space.s, top = Space.m, bottom = Space.l),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
         Column(Modifier.weight(1f)) {
-            Text(LocalDateText.current.dayLong(today), style = Hc.type.title, color = Hc.colors.ink)
-            Text(syncLine(syncing, history, state, now), style = Hc.type.caption, color = Hc.colors.inkMuted, maxLines = 1)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.m)) {
+                Text(text.weekdayLong(today), style = Hc.type.largeTitle, color = Hc.colors.ink, maxLines = 1, modifier = Modifier.weight(1f, fill = false))
+                Box(Modifier.size(HEADER_RING), contentAlignment = Alignment.Center) {
+                    Text(today.dayOfMonth.toString(), style = Hc.type.headline, color = Hc.colors.ink)
+                    PenRing(HEADER_RING)
+                }
+            }
+            Text(
+                stringResource(R.string.month_and_sync, text.monthName(today), syncLine(syncing, history, state, now)),
+                style = Hc.type.caption, color = Hc.colors.inkMuted, maxLines = 1, overflow = TextOverflow.Ellipsis,
+            )
         }
-        IconAction(HcIcons.Settings, stringResource(R.string.settings), onSettings)
+        IconAction(HcIcons.Settings, stringResource(R.string.settings), onSettings, filled = true)
     }
 }
 
@@ -157,48 +176,32 @@ private fun FilterRow(state: CalendarState, filter: MemberId?, onFilter: (Member
     val people = state.activeMembers().map(Marks::mark)
     LazyRow(horizontalArrangement = Arrangement.spacedBy(Space.s), contentPadding = PaddingValues(vertical = Space.xs)) {
         item {
-            FilterChip(selected = filter == null, label = stringResource(R.string.filter_everyone), onClick = { onFilter(null) }) {
-                GroupDisc(28.dp, stringResource(R.string.group_disc))
+            Pill(stringResource(R.string.filter_everyone), selected = filter == null, onClick = { onFilter(null) }, role = Role.Tab) {
+                GroupDisc(32.dp, stringResource(R.string.group_disc), color = if (filter == null) Hc.colors.onAction else Hc.colors.ink)
             }
         }
         items(people, key = { it.id.toString() }) { person ->
-            FilterChip(selected = filter == person.id, label = person.name, onClick = { onFilter(if (filter == person.id) null else person.id) }) {
-                PersonDisc(person, 28.dp, describe = false)
-            }
+            Pill(
+                person.name, selected = filter == person.id, onClick = { onFilter(if (filter == person.id) null else person.id) },
+                role = Role.Tab, person = Hc.colors.member(person.colorIndex),
+            ) { PersonDisc(person, 32.dp, describe = false) }
         }
-    }
-}
-
-@Composable
-private fun FilterChip(selected: Boolean, label: String, onClick: () -> Unit, leading: @Composable () -> Unit) {
-    val colors = Hc.colors
-    Row(
-        Modifier
-            .heightIn(min = Space.touch)
-            .clip(Radius.full)
-            .background(if (selected) colors.surface else colors.paper)
-            .border(1.dp, if (selected) colors.ink else colors.rule, Radius.full)
-            .clickable(role = Role.Tab, onClick = onClick)
-            .padding(start = Space.xs, end = Space.m),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Space.s),
-    ) {
-        leading()
-        Text(label, style = Hc.type.label, color = colors.ink)
     }
 }
 
 /** DESIGN.md: a quiet link, not a badge: the empty disc and the count. */
 @Composable
 private fun NeedsSomeoneLink(count: Int, onClick: () -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().heightIn(min = Space.touch).clickable(role = Role.Button, onClick = onClick).padding(horizontal = Space.gutter),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Space.s),
-    ) {
-        EmptyDisc(22.dp)
-        Text(pluralStringResource(R.plurals.need_someone_count, count, count), style = Hc.type.body, color = Hc.colors.ink, modifier = Modifier.weight(1f))
-        Icon(HcIcons.Forward, contentDescription = null, tint = Hc.colors.inkMuted)
+    HcCard(Modifier.fillMaxWidth().padding(start = Space.gutter, end = Space.gutter, top = Space.m), onClick = onClick) {
+        Row(
+            Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(horizontal = Space.l, vertical = Space.s),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Space.m),
+        ) {
+            EmptyDisc(26.dp)
+            Text(pluralStringResource(R.plurals.need_someone_count, count, count), style = Hc.type.label, color = Hc.colors.ink, modifier = Modifier.weight(1f))
+            Icon(HcIcons.Forward, contentDescription = null, tint = Hc.colors.inkMuted)
+        }
     }
 }
 
@@ -211,7 +214,7 @@ private fun AgendaList(state: CalendarState, now: Instant, filter: MemberId?, on
     val list = rememberLazyListState()
     val nearEnd by remember { derivedStateOf { list.layoutInfo.visibleItemsInfo.lastOrNull()?.index?.let { it >= list.layoutInfo.totalItemsCount - LOAD_AHEAD } ?: false } }
     LaunchedEffect(nearEnd) { if (nearEnd && days < MAX_DAYS) days += PAGE_DAYS }
-    LazyColumn(state = list, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = Space.l)) {
+    LazyColumn(state = list, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = LIST_CLEARANCE)) {
         agenda.forEach { day ->
             stickyHeader(key = "h${day.date}") { DayHeading(day) }
             dayRows(day, now, state, onOpen)
@@ -233,7 +236,6 @@ private fun androidx.compose.foundation.lazy.LazyListScope.dayRows(day: AgendaDa
         if (day.nowLineBefore == index) item(key = "n${day.date}") { NowLine(now.atZone(state.zone).toLocalTime()) }
         item(key = "r${day.date}${row.key.event}${row.key.occurrence}") {
             AgendaRowView(row, onClick = { onOpen(row.key) })
-            Rule(Modifier.padding(start = Space.gutter))
         }
     }
     if (day.nowLineBefore == day.rows.size && day.rows.isNotEmpty()) item(key = "n${day.date}") { NowLine(now.atZone(state.zone).toLocalTime()) }
@@ -257,7 +259,7 @@ private fun WeekList(state: CalendarState, now: Instant, filter: MemberId?, onOp
             previous = stringResource(R.string.previous_week), next = stringResource(R.string.next_week),
             onPrevious = { weekStart = weekStart.minusWeeks(1) }, onNext = { weekStart = weekStart.plusWeeks(1) },
         )
-        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = Space.l)) {
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = LIST_CLEARANCE)) {
             days.forEach { day ->
                 stickyHeader(key = "h${day.date}") { DayHeading(day) }
                 dayRows(day, now, state, onOpen)
@@ -282,7 +284,7 @@ private fun MonthPane(state: CalendarState, now: Instant, filter: MemberId?, sel
     var month by remember { mutableStateOf(YearMonth.from(selected)) }
     val grid = remember(state, month, today) { MonthModel.build(state, month, today) }
     val dayAgenda = remember(state, selected, filter, now.epochSecond / SECONDS_PER_MINUTE) { AgendaModel.build(state, selected, 1, now, filter).firstOrNull() }
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = Space.l)) {
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = LIST_CLEARANCE)) {
         item {
             PagerBar(
                 LocalDateText.current.month(month), stringResource(R.string.previous_month), stringResource(R.string.next_month),
@@ -297,21 +299,19 @@ private fun MonthPane(state: CalendarState, now: Instant, filter: MemberId?, sel
                 }
             }
             grid.weeks.forEach { week ->
-                Row(Modifier.fillMaxWidth().padding(horizontal = Space.s)) {
+                Row(Modifier.fillMaxWidth().padding(horizontal = Space.s, vertical = 2.dp), horizontalArrangement = Arrangement.spacedBy(MONTH_GAP)) {
                     week.forEach { cell ->
                         val people = if (filter == null) cell.people else cell.people.filter { it.id == filter }
                         MonthCellView(cell.date, cell.inMonth, cell.today, cell.holiday, selected == cell.date, people, cell.everyone, Modifier.weight(1f)) { onSelect(cell.date) }
                     }
                 }
             }
-            Rule(Modifier.padding(top = Space.s))
         }
         if (dayAgenda != null) {
             item { DayHeading(dayAgenda) }
             dayAgenda.rows.forEach { row ->
                 item(key = "m${row.key.event}${row.key.occurrence}") {
                     AgendaRowView(row, onClick = { onOpen(row.key) })
-                    Rule(Modifier.padding(start = Space.gutter))
                 }
             }
         }
@@ -335,21 +335,22 @@ private fun MonthCellView(
     Column(
         modifier
             .aspectRatio(CELL_ASPECT)
-            .clip(Radius.small)
-            .background(if (selected) colors.surface else if (holiday) colors.band else colors.paper)
-            .then(if (selected) Modifier.border(1.dp, colors.ink, Radius.small) else Modifier)
+            .then(if (selected) Modifier.lifted(Depth.RAISED, Radius.medium) else Modifier)
+            .clip(Radius.medium)
+            .background(if (selected) colors.surface else if (holiday) colors.band else Color.Transparent)
             .clickable(role = Role.Button, onClick = onClick)
             .semantics(mergeDescendants = true) { contentDescription = description }
-            .padding(Space.xs),
+            .padding(vertical = Space.xs),
         horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(3.dp),
     ) {
-        Box(Modifier.size(28.dp), contentAlignment = Alignment.Center) {
-            Text(date.dayOfMonth.toString(), style = Hc.type.label.copy(fontFamily = Hc.type.time.fontFamily), color = if (inMonth) colors.ink else colors.inkMuted)
-            if (isToday) PenRing(28.dp)
+        Box(Modifier.size(30.dp), contentAlignment = Alignment.Center) {
+            Text(date.dayOfMonth.toString(), style = Hc.type.label.copy(fontFeatureSettings = "tnum"), color = if (inMonth) colors.ink else colors.inkMuted.copy(alpha = OUT_OF_MONTH))
+            if (isToday) PenRing(30.dp)
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(2.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(horizontalArrangement = Arrangement.spacedBy(3.dp), verticalAlignment = Alignment.CenterVertically) {
             if (everyone) Box(Modifier.size(6.dp).clip(Radius.full).background(colors.ink))
-            people.take(MAX_DOTS).forEach { person -> Box(Modifier.size(6.dp).clip(Radius.full).background(colors.member(person.colorIndex).accent)) }
+            people.take(MAX_DOTS).forEach { person -> Box(Modifier.size(6.dp).clip(Radius.full).background(colors.member(person.colorIndex).fill)) }
         }
     }
 }
@@ -361,3 +362,9 @@ private const val DAYS_PER_WEEK = 7
 private const val SECONDS_PER_MINUTE = 60
 private const val MAX_DOTS = 4
 private const val CELL_ASPECT = 0.82f
+private const val OUT_OF_MONTH = 0.6f
+private val MONTH_GAP = 4.dp
+private val HEADER_RING = 46.dp
+private val ADD_WIDTH = 260.dp
+/** Room under the last entry for the floating Add pill. */
+private val LIST_CLEARANCE = 112.dp

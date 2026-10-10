@@ -30,6 +30,8 @@ import dev.housecalendar.app.onboarding.OnboardingFlow
 import dev.housecalendar.app.onboarding.WhosePhone
 import dev.housecalendar.app.phone.PhoneRoot
 import dev.housecalendar.app.ui.components.LocalDateText
+import dev.housecalendar.app.ui.components.LocalMembers
+import dev.housecalendar.app.model.Marks
 import dev.housecalendar.app.ui.format.DateText
 import dev.housecalendar.app.ui.theme.Hc
 import dev.housecalendar.app.ui.theme.HouseCalendarTheme
@@ -66,8 +68,9 @@ class MainActivity : FragmentActivity() {
                 val zone = ready?.state?.zone ?: java.time.ZoneId.systemDefault()
                 val today = minute.atZone(zone).toLocalDate()
                 val dateText = remember(locale, is24Hour, today) { DateText(locale, is24Hour, today) }
-                CompositionLocalProvider(LocalDateText provides dateText) {
-                    Box(Modifier.fillMaxSize().background(Hc.colors.paper)) {
+                val members = remember(ready?.state) { ready?.state?.activeMembers()?.map(Marks::mark).orEmpty() }
+                CompositionLocalProvider(LocalDateText provides dateText, LocalMembers provides members) {
+                    Box(Modifier.fillMaxSize().background(Hc.colors.ground)) {
                         when {
                             key is KeyState.Loading || snapshot is CalendarSnapshot.Loading -> Unit
                             key is KeyState.None && ready == null -> OnboardingFlow(graph)

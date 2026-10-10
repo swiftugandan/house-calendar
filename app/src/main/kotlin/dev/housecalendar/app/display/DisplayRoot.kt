@@ -151,7 +151,7 @@ fun DisplayRoot(graph: AppGraph, state: CalendarState, now: Instant) {
     Box(
         Modifier
             .fillMaxSize()
-            .background(Hc.colors.paper)
+            .background(Hc.colors.ground)
             .pointerInput(Unit) {
                 awaitEachGesture {
                     awaitFirstDown(pass = PointerEventPass.Initial, requireUnconsumed = false)

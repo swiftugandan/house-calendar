@@ -76,6 +76,8 @@ import dev.housecalendar.app.ui.components.SectionLabel
 import dev.housecalendar.app.ui.components.SwitchRow
 import dev.housecalendar.app.ui.components.Words
 import dev.housecalendar.app.ui.icons.HcIcons
+import dev.housecalendar.app.ui.components.Pill
+import dev.housecalendar.app.ui.theme.MemberColor
 import dev.housecalendar.app.ui.theme.Hc
 import dev.housecalendar.app.ui.theme.Radius
 import dev.housecalendar.app.ui.theme.Space
@@ -152,7 +154,7 @@ fun AddSheet(graph: AppGraph, state: CalendarState, now: Instant, mode: SheetMod
     }
     if (displaySized) {
         Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-            Box(Modifier.widthIn(max = 720.dp).fillMaxWidth().padding(Space.xl).clip(Radius.medium).background(Hc.colors.surface)) { content() }
+            Box(Modifier.widthIn(max = 720.dp).fillMaxWidth().padding(Space.xl).clip(Radius.large).background(Hc.colors.surface)) { content() }
         }
     } else {
         ModalBottomSheet(
@@ -243,14 +245,14 @@ private fun SheetBody(
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.s), verticalArrangement = Arrangement.spacedBy(Space.s)) {
                 val everyone = draft.who !is Who.Members
                 PersonToggle(stringResource(R.string.everyone), everyone, disc, { onDraft(draft.copy(who = if (everyone) Who.Members(emptySet()) else Who.Everyone)) }) {
-                    GroupDisc(disc * 0.7f, stringResource(R.string.group_disc))
+                    GroupDisc(disc * 0.7f, stringResource(R.string.group_disc), color = if (everyone) Hc.colors.onAction else Hc.colors.ink)
                 }
                 state.activeMembers().forEach { member ->
                     val chosen = (draft.who as? Who.Members)?.members?.contains(member.id) == true
                     PersonToggle(member.name, chosen, disc, {
                         val current = (draft.who as? Who.Members)?.members.orEmpty()
                         onDraft(draft.copy(who = Who.Members(if (chosen) current - member.id else current + member.id)))
-                    }) { PersonDisc(Marks.mark(member), disc * 0.7f, describe = false) }
+                    }, person = Hc.colors.member(member.colorIndex)) { PersonDisc(Marks.mark(member), disc * 0.7f, describe = false) }
                 }
             }
 
@@ -374,23 +376,10 @@ private fun SuggestionRow(state: CalendarState, suggestion: dev.housecalendar.sc
     }
 }
 
+/** A who or taking choice: a person pill in their colour, or a neutral one for everyone and needs someone. */
 @Composable
-private fun PersonToggle(name: String, chosen: Boolean, disc: Dp, onClick: () -> Unit, leading: @Composable () -> Unit) {
-    val colors = Hc.colors
-    Row(
-        Modifier
-            .heightIn(min = disc)
-            .clip(Radius.full)
-            .background(if (chosen) colors.sunk else colors.surface)
-            .border(if (chosen) 2.dp else 1.dp, if (chosen) colors.ink else colors.rule, Radius.full)
-            .clickable(role = Role.Checkbox, onClick = onClick)
-            .padding(start = Space.xs, end = Space.m),
-        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.s),
-    ) {
-        leading()
-        Text(name, style = Hc.type.label, color = colors.ink)
-        if (chosen) Icon(HcIcons.Check, contentDescription = null, tint = colors.ink, modifier = Modifier.size(16.dp))
-    }
+private fun PersonToggle(name: String, chosen: Boolean, disc: Dp, onClick: () -> Unit, person: MemberColor? = null, leading: @Composable () -> Unit) {
+    Pill(name, chosen, onClick, role = Role.Checkbox, person = person, minHeight = disc, leading = leading)
 }
 
 @Composable
@@ -403,20 +392,16 @@ private fun DayChips(day: LocalDate, today: LocalDate, displaySized: Boolean, on
     if (displaySized) Spacer(Modifier.size(Space.xs))
 }
 
+/** One choice among several (day, repeat, ends, reminders): an option pill. */
 @Composable
 internal fun Chip(label: String, chosen: Boolean, onClick: () -> Unit) {
-    val colors = Hc.colors
-    Box(
-        Modifier.heightIn(min = Space.touch).clip(Radius.small).background(if (chosen) colors.ink else colors.sunk)
-            .clickable(role = Role.RadioButton, onClick = onClick).padding(horizontal = Space.m, vertical = Space.s),
-        contentAlignment = Alignment.Center,
-    ) { Text(label, style = Hc.type.label, color = if (chosen) colors.surface else colors.ink, maxLines = 1) }
+    Pill(label, chosen, onClick, role = Role.RadioButton)
 }
 
 @Composable
 private fun ValueRow(label: String, value: String, modifier: Modifier = Modifier, isTime: Boolean = false, onClick: () -> Unit) {
     Column(
-        modifier.fillMaxWidth().heightIn(min = 56.dp).clip(Radius.small).background(Hc.colors.sunk).clickable(role = Role.Button, onClick = onClick).padding(horizontal = Space.m, vertical = Space.s),
+        modifier.fillMaxWidth().heightIn(min = 60.dp).clip(Radius.medium).background(Hc.colors.sunk).clickable(role = Role.Button, onClick = onClick).padding(horizontal = Space.l, vertical = Space.s),
     ) {
         Text(label, style = Hc.type.caption, color = Hc.colors.inkMuted)
         Text(value, style = if (isTime) Hc.type.timeStrong else Hc.type.title, color = Hc.colors.ink)
@@ -492,9 +477,10 @@ private fun TakingChoices(state: CalendarState, taking: Taking, disc: Dp, onTaki
     val people = if (everyone) state.activeMembers().map(Marks::mark) else adults
     FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.s), verticalArrangement = Arrangement.spacedBy(Space.s)) {
         Chip(stringResource(R.string.taking_not_needed), taking == Taking.NotNeeded) { onTaking(Taking.NotNeeded) }
-        PersonToggle(stringResource(R.string.needs_someone), taking == Taking.NeedsSomeone, disc, { onTaking(Taking.NeedsSomeone) }) { EmptyDisc(disc * 0.6f) }
+        val needs = taking == Taking.NeedsSomeone
+        PersonToggle(stringResource(R.string.needs_someone), needs, disc, { onTaking(Taking.NeedsSomeone) }) { EmptyDisc(disc * 0.6f, color = if (needs) Hc.colors.onAction else Hc.colors.inkMuted) }
         people.forEach { person ->
-            PersonToggle(person.name, taking == Taking.Person(person.id), disc, { onTaking(Taking.Person(person.id)) }) { PersonDisc(person, disc * 0.6f, describe = false) }
+            PersonToggle(person.name, taking == Taking.Person(person.id), disc, { onTaking(Taking.Person(person.id)) }, person = Hc.colors.member(person.colorIndex)) { PersonDisc(person, disc * 0.6f, describe = false) }
         }
         if (!everyone && state.activeMembers().size > adults.size) Chip(stringResource(R.string.taking_someone_else), false) { everyone = true }
     }

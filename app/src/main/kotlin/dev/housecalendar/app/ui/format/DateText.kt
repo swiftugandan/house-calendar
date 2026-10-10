@@ -20,6 +20,7 @@ class DateText(private val locale: Locale, is24Hour: Boolean, private val today:
     private val weekdayLong = DateTimeFormatter.ofPattern("EEEE", locale)
     private val dayAndMonth = DateTimeFormatter.ofPattern("d MMM", locale)
     private val month = DateTimeFormatter.ofPattern("MMMM yyyy", locale)
+    private val monthName = DateTimeFormatter.ofPattern("LLLL", locale)
 
     fun time(value: LocalTime): String = time.format(value)
 
@@ -40,6 +41,9 @@ class DateText(private val locale: Locale, is24Hour: Boolean, private val today:
     fun dayAndMonth(date: LocalDate): String = dayAndMonth.format(date)
 
     fun month(value: YearMonth): String = month.format(value)
+
+    /** "October", in its standalone form (some languages decline the month inside a date). */
+    fun monthName(date: LocalDate): String = monthName.format(date)
 
     fun dayNumber(date: LocalDate): String = date.dayOfMonth.toString()
 }

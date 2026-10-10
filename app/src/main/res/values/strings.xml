@@ -211,6 +211,8 @@
 
     <!-- Sync (SPEC FR-41 to FR-46) -->
     <string name="sync_title">Devices</string>
+    <!-- The phone header's second line: the month, then the sync line. -->
+    <string name="month_and_sync">%1$s · %2$s</string>
     <string name="sync_up_to_date_with">Up to date with %1$s · %2$s</string>
     <string name="sync_never">Not synced with another device yet</string>
     <string name="sync_running">Syncing with %1$s…</string>

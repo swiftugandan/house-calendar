@@ -85,7 +85,7 @@ fun OrganiserView(state: CalendarState, now: Instant, onOpen: (OccurrenceRef) ->
             val band = organiser.layout == OrganiserLayout.COLUMNS && day.everyone.isNotEmpty()
             val weight = (if (today) TODAY_WEIGHT else 1f) + (if (band) BAND_WEIGHT else 0f)
             Row(
-                Modifier.fillMaxWidth().weight(weight).background(if (today) Hc.colors.surface else Hc.colors.paper),
+                Modifier.fillMaxWidth().weight(weight).background(if (today) Hc.colors.surface else Hc.colors.ground),
             ) {
                 DayLabel(day, dayColumn)
                 Column(Modifier.weight(1f).fillMaxHeight()) {
@@ -355,7 +355,7 @@ fun DisplayMonthView(state: CalendarState, now: Instant, onOpen: (OccurrenceRef)
             Row(Modifier.fillMaxWidth().weight(1f)) {
                 week.forEach { cell ->
                     Column(
-                        Modifier.weight(1f).fillMaxHeight().background(if (cell.today) Hc.colors.surface else if (cell.holiday) Hc.colors.band else Hc.colors.paper).padding(Space.xs).clipToBounds(),
+                        Modifier.weight(1f).fillMaxHeight().background(if (cell.today) Hc.colors.surface else if (cell.holiday) Hc.colors.band else Hc.colors.ground).padding(Space.xs).clipToBounds(),
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Text(cell.date.dayOfMonth.toString(), style = type.detailStrong, color = if (cell.inMonth) Hc.colors.ink else Hc.colors.inkMuted)
