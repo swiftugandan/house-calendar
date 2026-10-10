@@ -5,6 +5,7 @@ import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
 import android.net.wifi.WifiManager
 import dev.housecalendar.contracts.DeviceId
+import dev.housecalendar.contracts.DeviceRole
 import dev.housecalendar.contracts.FamilyId
 import dev.housecalendar.sync.LinkPeer
 import dev.housecalendar.sync.PeerLink
@@ -30,21 +31,24 @@ import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
 import java.net.SocketException
-import java.util.UUID
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 /**
  * Finds the family's phones on the same Wi-Fi with Network Service Discovery (mDNS) and connects to them
  * over TCP (SAD ADR-9). Each phone listens on an ephemeral port while [peers] is collected and advertises
- * `_housecal._tcp` with three TXT attributes: the family tag (a hash, never the id), its device id and
- * its name. Only peers with a home-network address are connected to or accepted.
+ * `_housecal._tcp` with the TXT attributes of [LanRecord]: the family tag (a hash, never the id), its device
+ * id, its name and its role. Only peers with a home-network address are connected to or accepted.
  */
-public class LanLink(context: Context, family: FamilyId, private val self: DeviceId, selfName: String) : PeerLink {
+public class LanLink(
+    context: Context,
+    private val family: FamilyId,
+    private val self: DeviceId,
+    private val selfName: String,
+    private val selfRole: DeviceRole,
+) : PeerLink {
     private val appContext = context.applicationContext
     private val nsd = appContext.getSystemService(NsdManager::class.java)
-    private val tag = LanAddresses.familyTag(family)
-    private val name = selfName.take(MAX_NAME_CHARS)
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val found = MutableStateFlow<Map<String, LinkPeer>>(emptyMap())
     private val incoming = Channel<Transport>(Channel.UNLIMITED)
@@ -106,9 +110,7 @@ public class LanLink(context: Context, family: FamilyId, private val self: Devic
         serviceName = SERVICE_PREFIX + self.toString().take(SERVICE_ID_CHARS)
         serviceType = SERVICE_TYPE
         setPort(port)
-        setAttribute(ATTR_FAMILY, tag)
-        setAttribute(ATTR_DEVICE, self.toString())
-        setAttribute(ATTR_NAME, name)
+        LanRecord.attributes(family, self, selfName, selfRole).forEach { (key, value) -> setAttribute(key, value) }
     }
 
     private fun registrationListener() = object : NsdManager.RegistrationListener {
@@ -143,23 +145,16 @@ public class LanLink(context: Context, family: FamilyId, private val self: Devic
                 override fun onResolveFailed(service: NsdServiceInfo, errorCode: Int) = continuation.resume(null)
             })
         } ?: return@withLock null
-        val attributes = resolved.attributes
-        val family = attributes[ATTR_FAMILY]?.toString(Charsets.UTF_8)
-        val device = attributes[ATTR_DEVICE]?.toString(Charsets.UTF_8)?.let { runCatching { DeviceId(UUID.fromString(it)) }.getOrNull() }
+        val record = LanRecord.parse(resolved.attributes, family, self) ?: return@withLock null
         val host = resolved.host
-        if (family != tag || device == null || device == self || host == null || !LanAddresses.isLocal(host)) return@withLock null
-        val peerName = attributes[ATTR_NAME]?.toString(Charsets.UTF_8).orEmpty()
-        LinkPeer("${host.hostAddress}:${resolved.port}", device, peerName)
+        if (host == null || !LanAddresses.isLocal(host)) return@withLock null
+        LinkPeer("${host.hostAddress}:${resolved.port}", record.device, record.name, record.role)
     }
 
     private companion object {
         const val SERVICE_TYPE = "_housecal._tcp."
         const val SERVICE_PREFIX = "hc-"
         const val SERVICE_ID_CHARS = 13
-        const val ATTR_FAMILY = "f"
-        const val ATTR_DEVICE = "d"
-        const val ATTR_NAME = "n"
-        const val MAX_NAME_CHARS = 40
         const val CONNECT_TIMEOUT_MS = 5_000
         const val MULTICAST_TAG = "house-calendar-nsd"
     }
