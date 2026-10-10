@@ -19,3 +19,4 @@ rootProject.name = "house-calendar"
 include(":contracts")
 include(":schedule")
 include(":sync")
+include(":data")
