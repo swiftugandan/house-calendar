@@ -29,14 +29,16 @@ import androidx.compose.ui.unit.dp
 import dev.housecalendar.app.AppGraph
 import dev.housecalendar.app.R
 import dev.housecalendar.app.model.IntakeModel
-import dev.housecalendar.app.ui.components.EventIcon
 import dev.housecalendar.app.ui.components.LocalDateText
 import dev.housecalendar.app.ui.components.OutcomeButton
 import dev.housecalendar.app.ui.components.QuietButton
-import dev.housecalendar.app.ui.components.Rule
 import dev.housecalendar.app.ui.components.TopBar
 import dev.housecalendar.app.ui.components.Words
 import dev.housecalendar.app.ui.icons.IconSuggester
+import dev.housecalendar.app.ui.components.HcCard
+import dev.housecalendar.app.ui.components.IconTile
+import dev.housecalendar.app.ui.theme.Depth
+import androidx.compose.foundation.layout.PaddingValues
 import dev.housecalendar.app.ui.theme.Hc
 import dev.housecalendar.app.ui.theme.Space
 import dev.housecalendar.contracts.CalendarIds
@@ -69,19 +71,18 @@ fun ImportReviewScreen(graph: AppGraph, state: CalendarState, result: IntakeResu
     }
     Column(Modifier.fillMaxSize()) {
         TopBar(stringResource(if (copies) R.string.import_phone_calendars_title else R.string.import_title), onDone, backLabel = stringResource(R.string.back))
-        LazyColumn(Modifier.weight(1f)) {
+        LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(horizontal = Space.gutter), verticalArrangement = Arrangement.spacedBy(Space.s)) {
             item {
-                Column(Modifier.padding(horizontal = Space.gutter, vertical = Space.s), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+                Column(Modifier.padding(horizontal = Space.xs, vertical = Space.s), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
                     if (copies) Text(stringResource(R.string.import_copy_note), style = Hc.type.caption, color = Hc.colors.inkMuted)
                     if (!IntakeModel.canBeHolidays(chosen)) Text(stringResource(R.string.import_everyone_note), style = Hc.type.caption, color = Hc.colors.inkMuted)
                 }
             }
             itemsIndexed(result.drafts) { index, draft ->
                 ReviewRow(draft, ticked.getOrElse(index) { false }, IntakeModel.alreadyOnCalendar(draft, state)) { ticked[index] = !ticked[index] }
-                Rule(Modifier.padding(start = Space.gutter))
             }
             item {
-                Column(Modifier.padding(Space.gutter), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+                Column(Modifier.padding(horizontal = Space.xs, vertical = Space.m), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
                     if (result.skipped > 0) Text(pluralStringResource(R.plurals.import_skipped, result.skipped, result.skipped), style = Hc.type.caption, color = Hc.colors.inkMuted)
                     if (result.overridesSkipped > 0) Text(pluralStringResource(R.plurals.import_overrides, result.overridesSkipped, result.overridesSkipped), style = Hc.type.caption, color = Hc.colors.inkMuted)
                 }
@@ -110,17 +111,20 @@ private fun ReviewRow(draft: IncomingDraft, ticked: Boolean, already: Boolean, o
         start != null -> stringResource(R.string.time_on_day, text.dayShort(day), Words.time(start))
         else -> text.dayShort(day)
     }
-    Row(
-        Modifier.fillMaxWidth().heightIn(min = 56.dp).clickable(role = Role.Checkbox, onClick = onToggle).padding(horizontal = Space.gutter, vertical = Space.s),
-        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.m),
-    ) {
-        Checkbox(ticked, onCheckedChange = null, colors = CheckboxDefaults.colors(checkedColor = Hc.colors.action, checkmarkColor = Hc.colors.onAction, uncheckedColor = Hc.colors.inkMuted))
-        Box(Modifier.size(28.dp), contentAlignment = Alignment.Center) { EventIcon(IconSuggester.suggest(draft.title), 20.dp) }
-        Column(Modifier.weight(1f)) {
-            Text(draft.title, style = Hc.type.title, color = Hc.colors.ink)
-            Text(whenText, style = Hc.type.caption, color = Hc.colors.inkMuted)
-            if (already) Text(stringResource(R.string.import_already), style = Hc.type.caption, color = Hc.colors.ink)
-            draft.unmappableRule?.let { Text(stringResource(R.string.import_unmappable_note, it), style = Hc.type.caption, color = Hc.colors.inkMuted) }
+    // Unticked rows sit flat on the band rather than fading, so their text keeps its contrast.
+    HcCard(Modifier.fillMaxWidth(), color = if (ticked) Hc.colors.surface else Hc.colors.band, depth = if (ticked) Depth.RAISED else null) {
+        Row(
+            Modifier.fillMaxWidth().heightIn(min = 64.dp).clickable(role = Role.Checkbox, onClick = onToggle).padding(horizontal = Space.m, vertical = Space.s),
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.m),
+        ) {
+            Checkbox(ticked, onCheckedChange = null, colors = CheckboxDefaults.colors(checkedColor = Hc.colors.action, checkmarkColor = Hc.colors.onAction, uncheckedColor = Hc.colors.inkMuted))
+            IconTile(IconSuggester.suggest(draft.title), Hc.colors.sunk)
+            Column(Modifier.weight(1f)) {
+                Text(draft.title, style = Hc.type.title, color = Hc.colors.ink)
+                Text(whenText, style = Hc.type.caption, color = Hc.colors.inkMuted)
+                if (already) Text(stringResource(R.string.import_already), style = Hc.type.caption, color = Hc.colors.ink)
+                draft.unmappableRule?.let { Text(stringResource(R.string.import_unmappable_note, it), style = Hc.type.caption, color = Hc.colors.inkMuted) }
+            }
         }
     }
 }
