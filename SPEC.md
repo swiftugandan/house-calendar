@@ -91,7 +91,7 @@ Families coordinate their week on a paper calendar in the kitchen: who has what 
   | Scope | Recorded as |
   |---|---|
   | **Only this one** | An occurrence edit for `(eventId, originalDate)`, carrying the changed fields |
-  | **This and following** | A change from `(eventId, originalDate)`, carrying the changed fields. If the occurrence is the event's first, this is recorded as "all" instead. |
+  | **This and following** | A change from `(eventId, originalDate)`, carrying the changed fields. If the occurrence is the event's first (the earliest occurrence the recording device can see, which is not always the start date), this is recorded as "all" instead. |
   | **All** | An event update carrying the changed fields. For each change from that sets one of those fields, as seen on the recording device, the same value is also written to it, so that the change shows everywhere. Occurrence edits are left as they are. |
 
   - Changing a non-repeating event is always an event update.
@@ -149,9 +149,11 @@ Families coordinate their week on a paper calendar in the kitchen: who has what 
   - if a rule and `termTimeOnly` are both in force at `d`, then `d` is not inside any non-deleted holiday.
 
   Occurrence edits do not change this test. An occurrence edit whose original date is not an occurrence is **dormant**: it is kept, has no effect, and comes back into effect if its date becomes an occurrence again (Example 7).
-- **FR-25:** The **placement** of an occurrence is its `day`, which is `d` unless an occurrence edit moves it, and its slot. Its **start** and **end** are family time:
-  - **all day:** from `day` to `day + days − 1`
-  - **timed:** from `day` at `start` to `day + endDayOffset` at `end`.
+- **FR-25:** The **placement** of an occurrence is its **day**, which is `d` unless an occurrence edit moves it, and its slot. Its **start** and **end** are family time, and every interval is **half-open**, `[start, end)`:
+  - **all day:** covers the days `[day, day + days)`
+  - **timed:** runs from `day` at `start` to `day + endDayOffset` at `end`. It occupies each date from its start date up to the date of the last minute before `end`, so an event ending at 00:00 doesn't occupy the following day.
+- **FR-25a:** A record that is missing a field needed to place it has no occurrences. An event needs a title, a start date and a slot. An occurrence edit that moves an occurrence needs a slot from somewhere in the overlay. A record can only be incomplete if it comes from a hostile peer or a partial future write, and merging never rejects it (FR-43).
+  - A family timezone this device can't resolve (for example, a newer tz identifier) falls back to `UTC` for computing instants. Diagnostics shows a notice, so every device with the same tzdata computes the same instants.
 - **FR-26:** The agenda for a window of days `[from, to]` is every occurrence whose placement overlaps the window, apart from those with `cancelled = true`.
   - It is computed by testing each candidate original date in `[from − 31, to]`, which is enough because of the span limit in FR-9.
   - It also tests the original date of every occurrence edit that moves an occurrence into the window.

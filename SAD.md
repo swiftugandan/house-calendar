@@ -276,7 +276,7 @@ Copied unchanged from House Points (its SAD §4.1): format byte `0x01`, then UUI
 
 `CONTRACTS.md` has the full catalogue. In summary:
 - one `family.created`
-- per-field LWW upserts: `family.settings`, `device.upsert`, `member.upsert`, `event.upsert`, `event.change` (keyed by `eventId` + `from`), `event.edit` (keyed by `eventId` + `day`) and `holiday.upsert`
+- per-field LWW upserts: `family.settings`, `device.upsert`, `member.upsert`, `event.upsert`, `event.change` (keyed by `eventId` + `from`), `event.edit` (keyed by `eventId` + `occurrence`, the original date; the moved-to day is the field `movedTo`) and `holiday.upsert`
 - `device.removed`.
 
 Every field except a record's key is optional, and absent means "not written" (FR-42).
@@ -338,7 +338,8 @@ data class LinkPeer(val address: String, val device: DeviceId, val name: String,
 - **ADR-12: Calendar state is itself a CRDT, so projection is incremental.**
   - Every record field is an LWW register merged by `max(stamp)`, and every derived set is keyed. So `fold(A ∪ B) = fold(A).plus(B)`.
   - The repository never re-reads the whole log after startup, which removes the House Points fallback plan (a snapshot cache) before it's needed.
-  - A property test asserts `fold(ops) == fold(prefix).plus(rest)` for random splits and orders.
+  - A property test asserts `fold(ops) == fold(prefix).plus(rest)` for random **disjoint** splits and orders.
+  - *Caveat:* the diagnostic counters (unknown types per type) are sums, not maxima, so `plus` is idempotent only on ops not yet applied. That holds because `OpLog.append` reports only newly stored ops, and the repository applies exactly those.
 - **ADR-13: Exact alarms, one at a time, recomputed at fire time.**
   - Calendar reminders are the use Android names for exact alarms [R6].
   - Keeping one alarm (not one per reminder) avoids stale alarms after a sync, and the recompute at fire time makes the log the only truth.
