@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>House Calendar · the family calendar, on the kitchen wall and in your pocket</title>
+<meta name="description" content="The paper calendar from the kitchen, on a tablet on the wall and on the parents' phones. Who's doing what, and who's taking them. Android, no account, no internet.">
+<meta property="og:title" content="House Calendar">
+<meta property="og:description" content="The family calendar, on the kitchen wall and in your pocket.">
+<meta property="og:image" content="screens/display-week.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='18 18 72 72'%3E%3Crect x='18' y='18' width='72' height='72' rx='16' fill='%2318232B'/%3E%3Cpath d='M30 34h48a4 4 0 0 1 4 4v34a4 4 0 0 1-4 4H30a4 4 0 0 1-4-4V38a4 4 0 0 1 4-4z' fill='none' stroke='%23fff' stroke-width='3.5' stroke-linejoin='round'/%3E%3Cpath d='M42 29v10M66 29v10' stroke='%23fff' stroke-width='3.5' stroke-linecap='round'/%3E%3Cpath d='M27 46h54M27 58h54M43 46v30M59 46v30' stroke='%23fff' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M60.5 62.5c4.5-2.5 10.5-1 11.5 3.5s-3.5 8-8.5 8-7.5-3.5-6.5-7c.6-2 2.6-3.2 4.6-3.8' fill='none' stroke='%23FF8F6B' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F5F7F6; --surface: #FFFFFF; --sunk: #E9EEEC; --band: #E4EAE7; --rule: #D3DAD7;
+  --ink: #18232B; --ink-muted: #52606A; --action: #1E6B4E; --on-action: #FFFFFF; --today: #B3361C;
+  --display: "Bricolage Grotesque", system-ui, sans-serif;
+  --body: "Atkinson Hyperlegible Next", system-ui, sans-serif;
+  --measure: 34rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #121A1F; --surface: #1B252B; --sunk: #243037; --band: #22303A; --rule: #2C3940;
+    --ink: #E6EDEA; --ink-muted: #A3B1AB; --action: #6CC9A0; --on-action: #0D1A14; --today: #FF8F6B;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 400 1.0625rem/1.6 var(--body); font-variant-numeric: tabular-nums; }
+a { color: var(--action); text-underline-offset: 0.18em; }
+a:hover { text-decoration-thickness: 2px; }
+img { display: block; max-width: 100%; height: auto; }
+.wrap { width: min(72rem, 100% - 2rem); margin-inline: auto; }
+
+header.site { border-bottom: 1px solid var(--rule); }
+header.site .wrap { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 4rem; flex-wrap: wrap; }
+.wordmark { font: 700 1.375rem/1 var(--display); color: var(--ink); text-decoration: none; display: flex; align-items: center; gap: 0.625rem; }
+.wordmark svg { width: 1.75rem; height: 1.75rem; flex: none; }
+nav.site { display: flex; gap: 1.25rem; flex-wrap: wrap; font-weight: 700; font-size: 0.9375rem; }
+nav.site a { color: var(--ink-muted); text-decoration: none; padding-block: 0.75rem; }
+nav.site a:hover { color: var(--ink); }
+
+h1, h2, h3 { font-family: var(--display); color: var(--ink); margin: 0; }
+.hero { padding-block: 4.5rem 0; }
+.hero-text { max-width: 44rem; }
+h1 { font-weight: 700; font-size: clamp(2.5rem, 5.5vw, 4rem); line-height: 1.04; letter-spacing: -0.01em; }
+/* The pen ring from the app, drawn round one word. */
+.ringed { position: relative; white-space: nowrap; }
+.ringed::after { content: ""; position: absolute; inset: -0.08em -0.18em -0.02em -0.12em; border: 3px solid var(--today); border-radius: 50%; transform: rotate(-4deg); pointer-events: none; }
+.lede { font-size: 1.25rem; color: var(--ink-muted); max-width: var(--measure); margin: 1.5rem 0 2rem; }
+.actions { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
+.button { display: inline-flex; align-items: center; gap: 0.5rem; min-height: 3.5rem; padding: 0 1.5rem; border-radius: 12px; background: var(--action); color: var(--on-action); font-weight: 700; text-decoration: none; }
+.button:hover { filter: brightness(1.08); }
+.quiet { display: inline-flex; align-items: center; min-height: 3.5rem; padding: 0 1.25rem; border-radius: 12px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); font-weight: 700; text-decoration: none; }
+.small { font-size: 0.9375rem; color: var(--ink-muted); margin-top: 1rem; }
+
+/* The wall and the pocket: the tablet, with a phone standing in front of it. */
+.stage { position: relative; margin-top: 3.5rem; padding-bottom: 4rem; }
+.tablet { background: var(--surface); border: 1px solid var(--rule); border-radius: 22px; padding: 12px; width: 82%; }
+.tablet img { border-radius: 12px; }
+.stage .phone { position: absolute; right: 0; bottom: 0; width: 24%; max-width: none; box-shadow: 0 1.5rem 3rem -1rem rgb(0 0 0 / 0.25); }
+.phone { background: var(--surface); border: 1px solid var(--rule); border-radius: 28px; padding: 9px; max-width: 18rem; margin-inline: auto; }
+.phone img { border-radius: 20px; }
+/* Screens whose content sits at the top: shown down to where it ends, not down to an empty floor. */
+.phone.crop img { aspect-ratio: 1080 / 1150; object-fit: cover; object-position: top; border-radius: 20px 20px 12px 12px; }
+figure { margin: 0; }
+figcaption { font-size: 0.9375rem; color: var(--ink-muted); margin-top: 0.75rem; text-align: center; }
+
+section { padding-block: 4rem; border-top: 1px solid var(--rule); }
+.section-head { max-width: var(--measure); margin-bottom: 2.25rem; }
+h2 { font-weight: 700; font-size: clamp(1.75rem, 3.2vw, 2.375rem); line-height: 1.12; }
+.section-head p { color: var(--ink-muted); margin: 0.75rem 0 0; }
+
+.trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem; }
+.trio .tablet { width: auto; padding: 8px; border-radius: 16px; }
+.trio .tablet img { border-radius: 8px; }
+.trio h3 { font-weight: 700; font-size: 1.25rem; margin: 1.25rem 0 0.375rem; }
+.trio p { color: var(--ink-muted); margin: 0; }
+
+.split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 3rem; align-items: center; }
+.split + .split { margin-top: 4rem; }
+.split.flip > :first-child { order: 2; }
+.split h3, .split h2.sub { font-weight: 700; font-size: 1.625rem; margin-bottom: 0.75rem; }
+.split p { color: var(--ink-muted); max-width: var(--measure); margin: 0 0 0.75rem; }
+.pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; align-items: start; }
+.pair .phone { max-width: 16rem; }
+
+ul.sources { list-style: none; padding: 0; margin: 1rem 0 0; max-width: var(--measure); border-top: 1px solid var(--rule); }
+ul.sources li { padding: 0.75rem 0; border-bottom: 1px solid var(--rule); }
+ul.sources strong { display: block; }
+ul.sources span { color: var(--ink-muted); font-size: 0.9375rem; }
+
+.principles { list-style: none; padding: 0; margin: 0; max-width: 46rem; border-top: 1px solid var(--rule); }
+.principles li { padding: 1rem 0; border-bottom: 1px solid var(--rule); display: grid; grid-template-columns: minmax(0, 14rem) minmax(0, 1fr); gap: 1.5rem; }
+.principles strong { font-family: var(--display); font-size: 1.125rem; }
+.principles span { color: var(--ink-muted); }
+
+.install { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 3rem; }
+ol.steps-list { margin: 1.5rem 0 0; padding-left: 1.25rem; }
+ol.steps-list li { margin-bottom: 0.75rem; }
+code, .fingerprint { font-family: ui-monospace, monospace; font-size: 0.875rem; overflow-wrap: anywhere; }
+.fingerprint { display: block; background: var(--sunk); border-radius: 4px; padding: 0.75rem; margin-top: 0.5rem; color: var(--ink); }
+
+details { border-bottom: 1px solid var(--rule); max-width: 46rem; }
+details:first-of-type { border-top: 1px solid var(--rule); }
+summary { cursor: pointer; font-weight: 700; padding: 1rem 0; min-height: 3rem; list-style-position: inside; }
+details p { margin: 0 0 1rem; color: var(--ink-muted); max-width: var(--measure); }
+
+footer.site { border-top: 1px solid var(--rule); padding-block: 2.5rem 3rem; color: var(--ink-muted); font-size: 0.9375rem; }
+footer.site .wrap { display: flex; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; }
+
+@media (max-width: 52rem) {
+  .split, .install { grid-template-columns: minmax(0, 1fr); gap: 2.5rem; }
+  .split.flip > :first-child { order: 0; }
+  .trio { grid-template-columns: minmax(0, 1fr); gap: 2.5rem; }
+  .hero { padding-block: 3rem 0; }
+  section { padding-block: 3rem; }
+  .tablet { width: 100%; }
+  .stage { padding-bottom: 0; }
+  .stage .phone { position: static; width: 60%; max-width: 16rem; margin-top: 1.5rem; }
+}
+@media (max-width: 36rem) {
+  .principles li { grid-template-columns: minmax(0, 1fr); gap: 0.25rem; }
+  nav.site { gap: 1rem; }
+}
+</style>
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <a class="wordmark" href="#top" aria-label="House Calendar, home">
+      <svg viewBox="18 18 72 72" aria-hidden="true"><rect x="18" y="18" width="72" height="72" rx="16" fill="#18232B"/><path d="M30 34h48a4 4 0 0 1 4 4v34a4 4 0 0 1-4 4H30a4 4 0 0 1-4-4V38a4 4 0 0 1 4-4z" fill="none" stroke="#fff" stroke-width="3.5" stroke-linejoin="round"/><path d="M42 29v10M66 29v10" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/><path d="M27 46h54M27 58h54M43 46v30M59 46v30" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M60.5 62.5c4.5-2.5 10.5-1 11.5 3.5s-3.5 8-8.5 8-7.5-3.5-6.5-7c.6-2 2.6-3.2 4.6-3.8" fill="none" stroke="#FF8F6B" stroke-width="3.5" stroke-linecap="round"/></svg>
+      House Calendar
+    </a>
+    <nav class="site" aria-label="Sections">
+      <a href="#wall">On the wall</a>
+      <a href="#lifts">Lifts</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#download">Download</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <div class="wrap hero">
+    <div class="hero-text">
+      <h1>The family calendar, on the kitchen wall and in your <span class="ringed">pocket</span>.</h1>
+      <p class="lede">A tablet on the wall shows the family's week, a column for each person, like the paper organiser it replaces. The parents' phones carry the same calendar, and every event says who is taking them.</p>
+      <div class="actions">
+        <a class="button" href="https://github.com/swiftugandan/house-calendar/releases/latest/download/house-calendar.apk">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 19h16"/></svg>
+          Download for Android
+        </a>
+        <a class="quiet" href="#wall">See it on the wall</a>
+      </div>
+      <p class="small">Free. Android 9 or later. No account, no adverts, nothing sent over the internet.</p>
+    </div>
+    <div class="stage">
+      <figure class="tablet"><img src="screens/display-week.png" width="1280" height="800" alt="The kitchen display's week: a column each for Sam, Alex, Ada and Tom, a row for each day, today circled in red. Chess club, Football and Grandma visiting run across everyone's columns."></figure>
+      <figure class="phone"><img src="screens/phone-agenda.png" width="1080" height="2400" alt="The phone agenda: one event needs someone, the dentist tomorrow with Sam taking, football practice that still needs someone, and swimming with Sam taking."></figure>
+    </div>
+  </div>
+
+  <section id="wall">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Made to be read from across the kitchen.</h2>
+        <p>Today's date and the time are sized for the far side of the table, and everything else for standing at the wall. The sizes are set in millimetres on the glass, so they hold on any tablet.</p>
+      </div>
+      <div class="trio">
+        <figure>
+          <div class="tablet"><img src="screens/display-week.png" width="1280" height="800" alt="Week view with a column for each person." loading="lazy"></div>
+          <h3>The week</h3>
+          <p>People across, days down, today circled in pen. Things for everyone run across the whole row.</p>
+        </figure>
+        <figure>
+          <div class="tablet"><img src="screens/display-today.png" width="1280" height="800" alt="Today view: each person, what they're doing now and what's next." loading="lazy"></div>
+          <h3>Today</h3>
+          <p>Each person: what they're doing now, and what's next. "Tomorrow 12:00 PM, Dentist, Sam taking."</p>
+        </figure>
+        <figure>
+          <div class="tablet"><img src="screens/display-month.png" width="1280" height="800" alt="Month view with half term shaded." loading="lazy"></div>
+          <h3>The month</h3>
+          <p>School holidays shaded, so you can see half term coming. At night the wall dims to a quiet clock.</p>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section id="lifts">
+    <div class="wrap">
+      <div class="split">
+        <div>
+          <h2>Who's taking them?</h2>
+          <p style="margin-top: 1rem">Every event says who is going and who is taking them, so the dentist on Sunday isn't just "Tom, dentist". When nobody has said yet, it shows an empty circle and joins a short list on the phones.</p>
+          <p>Tap "I'll take" and it's settled, on every phone and on the wall. Reminders go to the people in it and the person taking them.</p>
+        </div>
+        <div class="pair">
+          <figure class="phone crop"><img src="screens/phone-needs-someone.png" width="1080" height="2400" alt="Needs someone: Football practice on Sunday at 2 PM, with buttons I'll take and Alex takes." loading="lazy"></figure>
+          <figure class="phone crop"><img src="screens/phone-detail.png" width="1080" height="2400" alt="Swimming, Tuesday 13 October, 5 to 6 PM, every Tuesday in term time, at the Leisure Centre, Sam taking Ada." loading="lazy"></figure>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="term">
+    <div class="wrap">
+      <div class="split flip">
+        <div>
+          <h2 class="sub">Term time, done once.</h2>
+          <p>Enter the school holidays, or open the school's term-dates file, and choose "Add as holidays". Clubs set to "in term time" skip them by themselves.</p>
+          <p>Changing a repeating event asks once: only this one, this and the following ones, or all of them. Two phones changing the same club while apart can never end up with two copies of it.</p>
+        </div>
+        <figure class="phone"><img src="screens/phone-import-review.png" width="1080" height="2400" alt="A school's file offers INSET day, Christmas holidays and February half term, with the button Add 3 as holidays." loading="lazy"></figure>
+      </div>
+      <div class="split">
+        <div>
+          <h2 class="sub">Add it in the time it takes to say it.</h2>
+          <p>The add sheet opens on the title. It suggests a picture as you type, and offers who it's for, today or tomorrow, and who's taking them. The button says exactly what will happen: "Add Football practice, Sat 10 Oct 2:00 PM".</p>
+          <p>Things can also come in from other apps:</p>
+          <ul class="sources">
+            <li><strong>"Add to calendar" buttons</strong><span>From tickets, bookings and email: choose House Calendar.</span></li>
+            <li><strong>Calendar files</strong><span>Open a school's or club's <code>.ics</code> file. You see the list first and choose what to add.</span></li>
+            <li><strong>Shared text</strong><span>Share "Party at Mia's, Sat 3pm" from a message and the day and time are filled in.</span></li>
+            <li><strong>This phone's calendars</strong><span>Copy the next eight weeks across once, then untick what you don't want.</span></li>
+          </ul>
+        </div>
+        <figure class="phone"><img src="screens/phone-add-sheet.png" width="1080" height="2400" alt="The add sheet: Football practice for Alex, today 2 to 3 PM, taking not needed, and the button Add Football practice, Sat 10 Oct 2:00 PM." loading="lazy"></figure>
+      </div>
+    </div>
+  </section>
+
+  <section id="privacy">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>It stays in the house.</h2>
+        <p>The calendar lives on your own devices. They find each other on your home Wi-Fi and keep each other up to date, with Bluetooth when there's no shared Wi-Fi.</p>
+      </div>
+      <ul class="principles">
+        <li><strong>No account</strong><span>Nothing to sign up for. A new phone or tablet joins by scanning a code from one already in the family.</span></li>
+        <li><strong>No server</strong><span>There's nowhere else for the calendar to be. Everything between your devices is encrypted with a key only they hold.</span></li>
+        <li><strong>No internet</strong><span>It works with the router unplugged. Nothing about your family is sent anywhere, and there are no adverts or tracking.</span></li>
+        <li><strong>Apart, then together</strong><span>Phones can change things while out. Everything catches up when they're home, and every device ends up showing the same calendar.</span></li>
+        <li><strong>Your own copy</strong><span>Export the whole calendar to one file, locked with a passphrase, and bring it back into any device in the family.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="download">
+    <div class="wrap install">
+      <div>
+        <h2>Install</h2>
+        <ol class="steps-list">
+          <li><a href="https://github.com/swiftugandan/house-calendar/releases/latest/download/house-calendar.apk">Download the app</a> on each phone and on the kitchen tablet.</li>
+          <li>Open the file. If asked, allow your browser to install apps.</li>
+          <li>On the first phone, choose "Start a family calendar" and add the family.</li>
+          <li>On the tablet, choose "Join one from another device", then "The kitchen display". Scan the code from the phone's Settings, Devices and sync.</li>
+        </ol>
+        <p class="small">Needs Android 9 or later. A 10-inch tablet, plugged in, works best on the wall. Bluetooth sync uses Google Play services.</p>
+      </div>
+      <div>
+        <h3 style="font-size: 1.25rem">Open source</h3>
+        <p class="small" style="margin-top: 0.5rem">The source code, the design notes and every release are on <a href="https://github.com/swiftugandan/house-calendar">GitHub</a>, along with an honest list of what has and hasn't been tested on real devices yet.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="questions">
+    <div class="wrap">
+      <div class="section-head"><h2>Questions</h2></div>
+      <details><summary>Does it sync with Google Calendar?</summary><p>It brings things in from your phone's calendars once, when you ask, but it doesn't keep them in step. Keeping them in step would mean sending your calendar through someone's servers, which House Calendar never does.</p></details>
+      <details><summary>Does the tablet have to stay on?</summary><p>Yes. It stays awake so phones can reach it, and outside the day hours you set it dims to a quiet clock. Keep it plugged in.</p></details>
+      <details><summary>What if two phones change the same thing while apart?</summary><p>Both changes arrive at the next sync. If they changed the same detail, such as the time, the later change is kept. Changes to different details, and to different days of a repeating event, are all kept.</p></details>
+      <details><summary>Can the children use it?</summary><p>The wall is for everyone to read and tap. Settings on the wall are behind the tablet's screen lock. Children's own phones aren't supported yet.</p></details>
+      <details><summary>Is there an iPhone version?</summary><p>Not yet. House Calendar is Android only.</p></details>
+      <details><summary>What does it cost?</summary><p>Nothing. There are no adverts and no purchases.</p></details>
+    </div>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <span>House Calendar · the sibling of <a href="https://swiftugandan.github.io/house-points/">House Points</a></span>
+    <span>Type: Bricolage Grotesque and Atkinson Hyperlegible, SIL Open Font License</span>
+  </div>
+</footer>
+</body>
+</html>

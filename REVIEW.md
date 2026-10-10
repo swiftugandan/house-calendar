@@ -43,7 +43,11 @@ Status at hand-over (2026-10-10): all eight modules are built. Seven are verifie
 9. **The phone's time column is measured, not fixed** (`1d8830a`).
    - It fits the widest time in the device's clock format at the current font size.
    - At 200% text the times move to a line above the entry (WCAG 1.4.10 reflow) instead of being clipped. The 200% screenshot caught the clipping.
-10. **The display layout on a 10" tablet** (`938d8e6`):
+10. **The display layout on a 10" tablet** (`938d8e6`, then `fix/display-fit`, found while retaking screenshots for the website):
+    - cells measure their entries as drawn and show "+N more" from real heights, so an entry is never cut through
+    - a day with an everyone band gets that band's share of the height
+    - today's pen ring sizes itself to its row
+    - the Today board shows up to six people at once instead of scrolling
     - one-line day labels
     - the header date measured, falling back to a short form
     - today's row weighted ×1.6

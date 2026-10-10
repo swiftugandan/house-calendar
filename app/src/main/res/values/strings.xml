@@ -198,7 +198,7 @@
     <string name="create_family">Start the calendar</string>
     <string name="continue_">Continue</string>
     <string name="join_title">Join the family</string>
-    <string name="join_body">On a device that\'s already in the family, open Settings, then Devices, and show the code.</string>
+    <string name="join_body">On a device that\'s already in the family, open Settings, then Devices and sync, and show the code.</string>
     <string name="join_scan">Scan the code</string>
     <string name="join_paste">Or type the code</string>
     <string name="join_use_code">Use this code</string>
