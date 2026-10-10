@@ -397,7 +397,7 @@ Swimming entered with "after 10 times" (and Half term recorded) stores `until = 
 
 ### Example 10: a clash
 
-Football is on Tue 20 Oct, 17:30 to 18:30, who {Tom}, taking Sam. It overlaps Swimming (17:00 to 18:00, taking Sam) from 17:30 to 18:00, and Sam is taking both. Both occurrences show "Sam is also taking …". If Football's taking is changed to Alex, the clash disappears. A family dinner for everyone at 17:45 would also clash, with Ada and with Tom.
+Football is on Tue 20 Oct, 17:30 to 18:30, who {Tom}, taking Sam. It overlaps Swimming (17:00 to 18:00, taking Sam) from 17:30 to 18:00, and Sam is taking both. Both occurrences show "Sam is also taking …". If Football's taking is changed to Alex, the clash disappears. A family dinner for everyone at 17:45 would then clash for all four. Ada and Tom would each be in two things at once, and Sam and Alex would each be taking someone while due at dinner.
 
 ### Example 11: everyone, with a new member
 
