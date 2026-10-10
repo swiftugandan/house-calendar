@@ -470,7 +470,7 @@ A file has `DTSTART;TZID=America/New_York:20261103T120000`, `DTEND;TZID=America/
     - 0.2° is about the smallest x-height at which adults still read at full speed (the critical print size) [R18].
     - 2 m is from the kitchen table or the hob. 0.6 m is standing at the wall within arm's reach, which is where people stand to touch it.
     - Signage guidance of about 25 mm of letter height per 3 m [R19] is for readers on the move and would fit only a few lines on a tablet, so it isn't used.
-    - Checked in `DESIGN.md`: at these tiers, a 10" 1280×800 display fits the 7-day organiser with at least two entries per member per day before "+N more".
+    - Checked in `DESIGN.md` against the bundled fonts' measured x-heights: on a 10" 1280×800 display in landscape, the organiser fits 7 days with at least two one-line entries per member per day for families of up to 4 members. Families of 5 or 6 see 5 days at a time and swipe for the rest.
 
 ### Extensibility
 
