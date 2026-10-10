@@ -81,7 +81,8 @@ Families coordinate their week on a paper calendar in the kitchen: who has what 
   - **a named member**, who MAY be any non-archived member but is offered from the adults first.
 
   An occurrence that needs someone is **unresolved** until a person is named.
-- **FR-12:** A person MUST be able to add an event in a single sheet that works from top to bottom: who, what, when, repeat, taking. The default slot is timed, starting at the next whole hour and lasting 1 hour, on the day being viewed.
+- **FR-12:** A person MUST be able to add an event in a single sheet that works from top to bottom: what, who, when, repeat, taking. Place, notes and reminders are folded away below. The default slot is timed, starting at the next whole hour and lasting 1 hour, on the day being viewed.
+  - *Rationale:* the title comes first because a suggestion from it (FR-13) usually fills in everything below.
 - **FR-13:** While a title is typed, the app SHOULD suggest earlier events whose title starts with the typed text, ignoring case, most recent first. Choosing one copies its icon, who, slot, place and taking into the new event.
   - *Rationale:* families repeat the same activities, and re-entering the same five fields is where entry time goes.
 - **FR-14:** The app SHOULD suggest an icon from the title using a built-in keyword table (for example "swim" suggests the swimming icon). The person MAY change or clear it.
@@ -396,9 +397,13 @@ Only the 3 Nov swimming is moved to Sat 31 Oct. The agenda for 26 Oct to 1 Nov s
 - **NFR-A11Y-2:** Every phone screen MUST stay usable with system font scaling up to 200% [R16] and with TalkBack.
 - **NFR-A11Y-3:** Animations MUST respect the system "remove animations" setting.
 - **NFR-A11Y-4:** In display mode, text sizes MUST be calculated from the screen's physical density, not only from dp:
-  - **Glance tier** (today's date, the time, and each member's now and next): x-height of at least **0.2° of visual angle at 2.5 m** (≥ 8.7 mm).
-  - **Detail tier** (everything else in display mode): at least 0.2° at 1 m (≥ 3.5 mm).
-  - *Rationale:* 0.2° is about the smallest x-height at which adults still read at full speed (the critical print size) [R18]. 2.5 m is across a kitchen. 1 m is standing at the wall. Signage guidance of about 25 mm of letter height per 3 m of viewing distance [R19] is for readers on the move and would allow only a few lines on a tablet, so it isn't used.
+  - **Glance tier** (today's date, the time, and each member's now and next): x-height of at least **0.2° of visual angle at 2 m** (≥ 7.0 mm).
+  - **Detail tier** (everything else in display mode): at least 0.2° at 0.6 m (≥ 2.1 mm), which is about 1.5 times ordinary tablet text.
+  - *Rationale:*
+    - 0.2° is about the smallest x-height at which adults still read at full speed (the critical print size) [R18].
+    - 2 m is from the kitchen table or the hob. 0.6 m is standing at the wall within arm's reach, which is where people stand to touch it.
+    - Signage guidance of about 25 mm of letter height per 3 m [R19] is for readers on the move and would fit only a few lines on a tablet, so it isn't used.
+    - Checked in `DESIGN.md`: at these tiers, a 10" 1280×800 display fits the 7-day organiser with at least two entries per member per day before "+N more".
 
 ### Extensibility
 
@@ -489,7 +494,7 @@ Residual risks:
   - OQ-1: background discovery from a worker is unproven. The fallback (foreground sync) keeps every
     rule intact and only delays the display.
   - OQ-2: night dimming behaviour varies by tablet. It affects comfort, not correctness.
-  - The legibility tiers (NFR-A11Y-4) may leave little room on small tablets. DESIGN.md must show the
-    Week organiser fits a 10" 1280×800 display at the detail tier.
+  - The legibility tiers (NFR-A11Y-4) were sized against a 10" 1280×800 tablet. Tablets that report a
+    wrong physical density would get the wrong sizes, so a size check is offered in display settings.
 Known gaps: none that block architecture.
 ```
