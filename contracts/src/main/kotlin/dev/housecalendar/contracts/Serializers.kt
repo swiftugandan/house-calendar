@@ -75,7 +75,7 @@ public class Variant<T : Any>(internal val tag: String, internal val type: KClas
  * was, so a newer device's value never makes the whole payload unreadable (SPEC FR-46, NFR-EXT-1). The
  * unrecognised variant is written back exactly as it was read.
  */
-public abstract class TaggedUnionSerializer<T : Any>(serialName: String) : KSerializer<T> {
+public abstract class TaggedUnionSerializer<T : Any>(private val serialName: String) : KSerializer<T> {
     protected abstract val variants: List<Variant<out T>>
 
     /** The value standing for an object whose tag is not one of [variants]. */
@@ -92,17 +92,17 @@ public abstract class TaggedUnionSerializer<T : Any>(serialName: String) : KSeri
     }
 
     override fun deserialize(decoder: Decoder): T {
-        val input = decoder as? JsonDecoder ?: throw SerializationException("${descriptor.serialName} can only be read from JSON")
-        val element = input.decodeJsonElement() as? JsonObject ?: throw SerializationException("${descriptor.serialName} must be an object")
+        val input = decoder as? JsonDecoder ?: throw SerializationException("$serialName can only be read from JSON")
+        val element = input.decodeJsonElement() as? JsonObject ?: throw SerializationException("$serialName must be an object")
         val tag = (element[TAG] as? JsonPrimitive)?.takeIf { it.isString }?.content
-            ?: throw SerializationException("${descriptor.serialName} has no \"$TAG\"")
+            ?: throw SerializationException("$serialName has no \"$TAG\"")
         val variant = variants.firstOrNull { it.tag == tag } ?: return unrecognised(element)
         return input.json.decodeFromJsonElement(variant.serializer, JsonObject(element - TAG))
     }
 
     private fun tagged(json: Json, value: T): JsonObject {
         val variant = variants.firstOrNull { it.type.isInstance(value) }
-            ?: throw SerializationException("${value::class} is not a variant of ${descriptor.serialName}")
+            ?: throw SerializationException("${value::class} is not a variant of $serialName")
         @Suppress("UNCHECKED_CAST") // the variant was chosen because value is an instance of its type
         val fields = json.encodeToJsonElement(variant.serializer as KSerializer<T>, value) as? JsonObject
             ?: throw SerializationException("${variant.tag} must encode to an object")
@@ -118,7 +118,7 @@ public abstract class TaggedUnionSerializer<T : Any>(serialName: String) : KSeri
  * An open set of named values written as plain strings. A name this version does not know is kept as the
  * set's unrecognised value and written back unchanged, like [TaggedUnionSerializer]'s unrecognised variant.
  */
-public abstract class OpenSetSerializer<T : Any>(serialName: String) : KSerializer<T> {
+public abstract class OpenSetSerializer<T : Any>(private val serialName: String) : KSerializer<T> {
     protected abstract val known: Map<String, T>
 
     protected abstract fun unrecognised(raw: String): T
@@ -129,7 +129,7 @@ public abstract class OpenSetSerializer<T : Any>(serialName: String) : KSerializ
 
     override fun serialize(encoder: Encoder, value: T) {
         val name = rawOf(value) ?: known.entries.firstOrNull { it.value == value }?.key
-            ?: throw SerializationException("$value has no name in ${descriptor.serialName}")
+            ?: throw SerializationException("$value has no name in $serialName")
         encoder.encodeString(name)
     }
 
