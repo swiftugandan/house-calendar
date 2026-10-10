@@ -14,6 +14,7 @@
     <string name="nothing_on">Nothing on</string>
     <string name="time_range">%1$s–%2$s</string>
     <string name="time_range_next_day">%1$s–%2$s %3$s</string>
+    <string name="time_on_day">%1$s %2$s</string>
     <string name="continues">continues</string>
 
     <!-- Taking (SPEC FR-11) -->
@@ -272,8 +273,8 @@
     <string name="cancel">Cancel</string>
     <string name="holiday_name_hint">Half term</string>
     <string name="holiday_add">Add a holiday</string>
-    <string name="holiday_from">From</string>
-    <string name="holiday_to">To</string>
+    <string name="holiday_from">From %1$s</string>
+    <string name="holiday_to">To %1$s</string>
     <string name="holidays_empty">No holidays yet. Add your school\'s holidays and term-time activities skip them.</string>
     <string name="reminders_mine">Things I\'m in or taking</string>
     <string name="reminders_everyone">Everyone\'s events</string>

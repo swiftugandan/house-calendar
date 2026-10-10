@@ -262,7 +262,7 @@ private fun SheetBody(
             } else {
                 Row(horizontalArrangement = Arrangement.spacedBy(Space.s)) {
                     ValueRow(stringResource(R.string.starts), Words.time(draft.start), Modifier.weight(1f), isTime = true) { picking = Picker.START }
-                    ValueRow(stringResource(R.string.ends), Words.time(draft.end) + if (draft.endDay > draft.day) " " + LocalDateText.current.weekdayShort(draft.endDay) else "", Modifier.weight(1f), isTime = true) { picking = Picker.END }
+                    ValueRow(stringResource(R.string.ends), if (draft.endDay > draft.day) stringResource(R.string.time_on_day, Words.time(draft.end), LocalDateText.current.weekdayShort(draft.endDay)) else Words.time(draft.end), Modifier.weight(1f), isTime = true) { picking = Picker.END }
                 }
             }
 

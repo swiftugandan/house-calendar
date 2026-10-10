@@ -288,8 +288,8 @@ private fun HolidaysPage(graph: AppGraph, state: CalendarState, now: Instant) {
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(Space.m)) {
                     Field(name, { name = it }, stringResource(R.string.holiday_name_hint))
-                    QuietButton(stringResource(R.string.holiday_from) + " " + text.dayShort(first), { picking = true })
-                    QuietButton(stringResource(R.string.holiday_to) + " " + text.dayShort(last), { picking = false })
+                    QuietButton(stringResource(R.string.holiday_from, text.dayShort(first)), { picking = true })
+                    QuietButton(stringResource(R.string.holiday_to, text.dayShort(last)), { picking = false })
                     if (edit.id != null) QuietButton(stringResource(R.string.delete), {
                         scope.launch { graph.record(listOf(HolidayUpsert(edit.id, deleted = true))) }
                         editing = null

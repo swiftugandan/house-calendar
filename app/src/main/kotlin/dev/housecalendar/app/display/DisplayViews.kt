@@ -295,10 +295,10 @@ fun DisplayMonthView(state: CalendarState, now: Instant, onOpen: (OccurrenceRef)
                             if (cell.today) PenRing(em(type.detailSize) * MONTH_RING_EMS)
                         }
                         entries.filter { cell.date in it.day..it.lastDay }.take(MONTH_TITLES).forEach { entry ->
-                            Row(Modifier.clickable(role = Role.Button) { onOpen(entry.key) }, verticalAlignment = Alignment.CenterVertically) {
+                            Row(Modifier.clickable(role = Role.Button) { onOpen(entry.key) }, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.xs)) {
                                 val colour = entry.people.firstOrNull()?.let { id -> state.allMembers().firstOrNull { it.id == id }?.colorIndex }
                                 Box(Modifier.size(width = 4.dp, height = em(type.detailSize)).background(if (entry.everyone || colour == null) Hc.colors.ink else Hc.colors.member(colour).accent))
-                                Text(" " + entry.title, style = type.detailCaption, color = Hc.colors.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                Text(entry.title, style = type.detailCaption, color = Hc.colors.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
                             }
                         }
                         if (cell.titles.size + cell.more > MONTH_TITLES) Text(stringResource(R.string.more_count, cell.titles.size + cell.more - MONTH_TITLES), style = type.detailCaption, color = Hc.colors.inkMuted)
