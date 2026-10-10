@@ -48,16 +48,21 @@ Status at hand-over (2026-10-10): all eight modules are built. Seven are verifie
     - the header date measured, falling back to a short form
     - today's row weighted ×1.6
     - entries shrink to one line before "+N more" appears.
-11. **Restore while joining.** The joining screen also offers "Restore from an export file", which brings a passphrase-locked export into a device that holds the family key but nothing else. This is built but **not yet exercised on a device**. Only export and re-import on an existing family was.
+11. **Restore while joining.** The joining screen also offers "Restore from an export file", which brings a passphrase-locked export into a device that holds the family key but nothing else.
+    - This is built but **not yet exercised on a device**. Only export and re-import on an existing family was.
+    - The device writes its own record once the restored calendar loads, the same path as a normal join (`finishPendingJoin`).
 12. **Phone-calendar copies.**
     - Each occurrence comes in as a one-off. Repeating events aren't followed as series.
-    - The id comes from the event's UID plus its day, so copying twice doesn't duplicate.
+    - The id comes from the event's UID plus its day. If the source wrote no UID, the phone's own event id is used instead, which is stable on that phone. Either way, copying twice updates rather than duplicates.
     - The calendar permission is requested only when you tap "Copy from this phone's calendars".
+13. **Input from other apps is read in the family zone.**
+    - An "Add to calendar" intent can start the app before the calendar has loaded. At that point the family zone isn't known yet, and the first version fell back to the phone's zone.
+    - Now the raw input waits, and is converted only once the family zone is known (`IntakeModel.resolve`). A phone abroad still files a UK event at UK time.
 
 ### Process
 
-13. **`main` received the app commits early.** The socket fix branch was started from `module/app`, so merging it carried the app's first commits into `main`. Nothing was lost or rewritten. `module/app` was merged normally afterwards.
-14. **`module/intake/refactored` sits on the green commit.** The refactor pass landed afterwards as `refactor(app,intake)` on `module/app`.
+14. **`main` received the app commits early.** The socket fix branch was started from `module/app`, so merging it carried the app's first commits into `main`. Nothing was lost or rewritten. `module/app` was merged normally afterwards.
+15. **`module/intake/refactored` sits on the green commit.** The refactor pass landed afterwards as `refactor(app,intake)` on `module/app`.
 
 ## What is verified where
 
@@ -66,7 +71,8 @@ Status at hand-over (2026-10-10): all eight modules are built. Seven are verifie
 | `:contracts`, `:schedule`, `:intake`, `:sync` | JVM | Unit, property and spec-example suites. `:schedule` and `:intake` are pure, so their suites are their live boundary |
 | `:data` | `hc_phone` emulator | Instrumented suite, 14 tests |
 | `:lan` and `:sync`, live | Both emulators (shared virtual Wi-Fi) | Display joined by pairing code. A phone edit reached the display in 9.9 s (NFR-PERF-3 ≤ 15 s). Holiday and term-time edits converge on both |
-| `:app` phone | `hc_phone` | Onboarding, agenda, add sheet, detail, each edit scope, needs someone and "I'll take", holidays with term time, intake (insert intent, shared text, `.ics` as holidays), export and re-import, a reminder firing on time with the next one rescheduled, dark mode, 200% text |
+| `:app` phone | `hc_phone` | Onboarding, agenda, add sheet, detail, each edit scope, needs someone and "I'll take", holidays with term time, export and re-import, a reminder firing on time with the next one rescheduled, dark mode, 200% text |
+| `:app` intake | `hc_phone` | An insert intent from a cold start, shared text, a one-event file opening the add sheet, a mixed file through the review (rule note, skipped override, COUNT and EXDATE checked in the agenda), a term-dates file as holidays, a non-calendar file refused, "Already on the calendar" on reopening, and phone-calendar copies made twice without duplicates |
 | `:app` display | `hc_tablet` | Week organiser, Today, Month, and the night screen (by setting the tablet's clock to 23:00) |
 | `:nearby` | — | Framing and in-process session tests only |
 
