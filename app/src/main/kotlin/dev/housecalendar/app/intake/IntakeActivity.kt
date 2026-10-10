@@ -52,6 +52,8 @@ class IntakeActivity : Activity() {
     )
 
     /** Begin and end times arrive as longs from most apps, but some send them as strings. */
+    // The value's type isn't known in advance, and Bundle has no typed replacement for get().
+    @Suppress("DEPRECATION")
     private fun Intent.longExtra(name: String): Long? = when (val value = extras?.get(name)) {
         is Long -> value
         is Int -> value.toLong()

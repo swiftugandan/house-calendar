@@ -1,7 +1,6 @@
 package dev.housecalendar.app.phone
 
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -37,14 +36,12 @@ import dev.housecalendar.app.model.PersonMark
 import dev.housecalendar.app.model.TakingMark
 import dev.housecalendar.app.ui.components.ClashLine
 import dev.housecalendar.app.ui.components.EmptyDisc
-import dev.housecalendar.app.ui.components.EventIcon
 import dev.housecalendar.app.ui.components.GroupDisc
 import dev.housecalendar.app.ui.components.IconAction
 import dev.housecalendar.app.ui.components.LocalDateText
 import dev.housecalendar.app.ui.components.PeopleStack
 import dev.housecalendar.app.ui.components.PersonDisc
 import dev.housecalendar.app.ui.components.QuietButton
-import dev.housecalendar.app.ui.components.Rule
 import dev.housecalendar.app.ui.components.TopBar
 import dev.housecalendar.app.ui.components.Words
 import dev.housecalendar.app.ui.icons.HcIcons
