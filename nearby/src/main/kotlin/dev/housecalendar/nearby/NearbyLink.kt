@@ -16,8 +16,8 @@ import com.google.android.gms.nearby.connection.PayloadCallback
 import com.google.android.gms.nearby.connection.PayloadTransferUpdate
 import com.google.android.gms.nearby.connection.Strategy
 import dev.housecalendar.contracts.DeviceId
+import dev.housecalendar.contracts.DeviceRole
 import dev.housecalendar.contracts.FamilyId
-import dev.housecalendar.contracts.Uuids
 import dev.housecalendar.sync.Transport
 import dev.housecalendar.sync.TransportClosedException
 import kotlinx.coroutines.CompletableDeferred
@@ -33,11 +33,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withTimeoutOrNull
 import java.io.IOException
-import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
-/** Another phone of the same family, discovered nearby. */
-public data class Peer(val endpointId: String, val deviceId: DeviceId, val name: String)
+/** Another device of the same family, discovered nearby. */
+public data class Peer(val endpointId: String, val deviceId: DeviceId, val name: String, val role: DeviceRole)
 
 /** Nearby Connections refused to do something; [statusCode] is a `ConnectionsStatusCodes` value. */
 public class NearbyException(message: String, public val statusCode: Int?) : IOException(message)
@@ -46,19 +45,20 @@ public class NearbyException(message: String, public val statusCode: Int?) : IOE
  * Discovery, advertising and connections over Nearby Connections (SAD §3.5, ADR-5).
  *
  * - `Strategy.P2P_POINT_TO_POINT`; the service id embeds the family id, so only phones of the same family
- *   find each other. The endpoint name is `deviceId|display name`.
- * - Both phones advertise and discover while [peers] is collected. To avoid both requesting at once,
- *   the phone with the lower [DeviceId] requests and the other waits; both call [connect].
+ *   find each other. The endpoint name is [EndpointName]: `role|deviceId|display name`.
+ * - Both devices advertise and discover while [peers] is collected. Only the device that dials (the sync
+ *   layer's `Dialing` rule) calls [connect], which requests the connection; the other receives it through
+ *   [awaitIncoming].
  * - Nearby's 4-digit authentication token is accepted automatically: membership is proven by the family
  *   key inside the sync session (SAD ADR-4), not by Nearby.
  * - Frames travel as chunked `BYTES` payloads through [FramedTransport]. Closing a transport waits, for
  *   a bounded time, until Nearby reports every outgoing chunk transferred, then disconnects, so the last
  *   DONE frame of a session is not lost to an early disconnect.
  */
-public class NearbyLink(context: Context, familyId: FamilyId, private val self: DeviceId, selfName: String) {
+public class NearbyLink(context: Context, familyId: FamilyId, private val self: DeviceId, selfName: String, selfRole: DeviceRole) {
     private val client: ConnectionsClient = Nearby.getConnectionsClient(context.applicationContext)
     private val serviceId = SERVICE_PREFIX + familyId
-    private val endpointName = "$self$NAME_SEPARATOR${selfName.take(MAX_NAME_CHARS)}"
+    private val endpointName = EndpointName.encode(selfRole, self, selfName)
 
     private val found = MutableStateFlow<Map<String, Peer>>(emptyMap())
     private val connections = ConcurrentHashMap<String, Connection>()
@@ -84,13 +84,11 @@ public class NearbyLink(context: Context, familyId: FamilyId, private val self: 
     /** Connects to [peer]; throws [IOException] if Nearby refuses or nothing happens within the timeout. */
     public suspend fun connect(peer: Peer): Transport {
         val ready = awaitingConnection.getOrPut(peer.endpointId) { CompletableDeferred() }
-        if (Uuids.compare(self.uuid, peer.deviceId.uuid) < 0) {
-            try {
-                client.requestConnection(endpointName, peer.endpointId, lifecycle).await()
-            } catch (e: ApiException) {
-                awaitingConnection.remove(peer.endpointId)
-                throw NearbyException("connection request refused: ${e.message}", e.statusCode)
-            }
+        try {
+            client.requestConnection(endpointName, peer.endpointId, lifecycle).await()
+        } catch (e: ApiException) {
+            awaitingConnection.remove(peer.endpointId)
+            throw NearbyException("connection request refused: ${e.message}", e.statusCode)
         }
         return withTimeoutOrNull(CONNECT_TIMEOUT_MS) { ready.await() }
             ?: throw NearbyException("no connection with ${peer.name} within ${CONNECT_TIMEOUT_MS / MILLIS_PER_SECOND} s", null)
@@ -179,22 +177,12 @@ public class NearbyLink(context: Context, familyId: FamilyId, private val self: 
         }
     }
 
-    private fun parsePeer(endpointId: String, endpointName: String): Peer? {
-        val separator = endpointName.indexOf(NAME_SEPARATOR)
-        if (separator < 0) return null
-        val device = try {
-            DeviceId(UUID.fromString(endpointName.substring(0, separator)))
-        } catch (e: IllegalArgumentException) {
-            return null
-        }
-        return Peer(endpointId, device, endpointName.substring(separator + 1))
-    }
+    private fun parsePeer(endpointId: String, endpointName: String): Peer? =
+        EndpointName.parse(endpointName)?.let { Peer(endpointId, it.device, it.name, it.role) }
 
     private companion object {
         val STRATEGY: Strategy = Strategy.P2P_POINT_TO_POINT
         const val SERVICE_PREFIX = "dev.housecalendar.sync."
-        const val NAME_SEPARATOR = '|'
-        const val MAX_NAME_CHARS = 40
         const val CONNECT_TIMEOUT_MS = 30_000L
         const val DRAIN_TIMEOUT_MS = 3_000L
         const val MILLIS_PER_SECOND = 1_000L
