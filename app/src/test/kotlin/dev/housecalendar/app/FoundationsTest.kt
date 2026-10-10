@@ -8,6 +8,7 @@ import dev.housecalendar.app.calendar.NewMember
 import dev.housecalendar.app.sync.PairingCode
 import dev.housecalendar.app.ui.theme.DarkColors
 import dev.housecalendar.app.ui.theme.LightColors
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.toArgb
 import dev.housecalendar.contracts.DeviceRole
 import dev.housecalendar.contracts.DeviceUpsert
@@ -103,7 +104,7 @@ class FoundationsTest {
     @Test
     fun `every colour pairing in DESIGN dot md meets its WCAG contrast`() {
         listOf(LightColors, DarkColors).forEach { colors ->
-            val grounds = listOf(colors.paper, colors.surface, colors.sunk, colors.band)
+            val grounds = listOf(colors.ground, colors.surface, colors.sunk, colors.band)
             grounds.forEach { ground ->
                 assertAtLeast(4.5, colors.ink.toArgb(), ground.toArgb())
                 assertAtLeast(4.5, colors.inkMuted.toArgb(), ground.toArgb())
@@ -114,9 +115,24 @@ class FoundationsTest {
             assertAtLeast(4.5, colors.onToday.toArgb(), colors.today.toArgb())
             colors.members.forEach { member ->
                 assertAtLeast(4.5, member.onFill.toArgb(), member.fill.toArgb())
-                assertAtLeast(4.5, member.accent.toArgb(), colors.paper.toArgb())
+                // Text on a person's card is always ink; the tint never decides legibility.
+                assertAtLeast(4.5, colors.ink.toArgb(), member.tint.toArgb())
+                assertAtLeast(4.5, colors.inkMuted.toArgb(), member.tint.toArgb())
+                // Names in the member's colour, on white and on their own tint.
+                assertAtLeast(4.5, member.accent.toArgb(), colors.surface.toArgb())
+                assertAtLeast(4.5, member.accent.toArgb(), member.tint.toArgb())
             }
             assertEquals(8, colors.members.size)
+        }
+    }
+
+    @Test
+    fun `member tints are the fill blended over the card surface`() {
+        listOf(LightColors to 0.13f, DarkColors to 0.16f).forEach { (colors, alpha) ->
+            colors.members.forEach { member ->
+                val expected = member.fill.copy(alpha = alpha).compositeOver(colors.surface).toArgb()
+                assertEquals(Integer.toHexString(expected), Integer.toHexString(member.tint.toArgb()))
+            }
         }
     }
 

@@ -14,22 +14,25 @@
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --paper: #F5F7F6; --surface: #FFFFFF; --sunk: #E9EEEC; --band: #E4EAE7; --rule: #D3DAD7;
-  --ink: #18232B; --ink-muted: #52606A; --action: #1E6B4E; --on-action: #FFFFFF; --today: #B3361C;
+  --paper: #F2F4F6; --surface: #FFFFFF; --sunk: #E8ECEF; --band: #EEF1F3; --rule: #DCE2E6;
+  --ink: #0E161D; --ink-muted: #55616C; --action: #0E161D; --on-action: #FFFFFF; --today: #C2351B; --link: #2456A6;
+  --raised: 0 1px 2px rgb(14 22 29 / 0.05), 0 8px 24px rgb(14 22 29 / 0.06);
+  --floating: 0 2px 4px rgb(14 22 29 / 0.08), 0 24px 48px rgb(14 22 29 / 0.12);
   --display: "Bricolage Grotesque", system-ui, sans-serif;
   --body: "Atkinson Hyperlegible Next", system-ui, sans-serif;
   --measure: 34rem;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --paper: #121A1F; --surface: #1B252B; --sunk: #243037; --band: #22303A; --rule: #2C3940;
-    --ink: #E6EDEA; --ink-muted: #A3B1AB; --action: #6CC9A0; --on-action: #0D1A14; --today: #FF8F6B;
+    --paper: #0B0F13; --surface: #161C22; --sunk: #1F272E; --band: #1A2128; --rule: #28313A;
+    --ink: #EEF2F4; --ink-muted: #9EAAB4; --action: #EEF2F4; --on-action: #0B0F13; --today: #FF7B5C; --link: #8DB4F2;
+    --raised: 0 0 0 1px var(--rule); --floating: 0 0 0 1px var(--rule);
   }
 }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
 body { margin: 0; background: var(--paper); color: var(--ink); font: 400 1.0625rem/1.6 var(--body); font-variant-numeric: tabular-nums; }
-a { color: var(--action); text-underline-offset: 0.18em; }
+a { color: var(--link); text-underline-offset: 0.18em; }
 a:hover { text-decoration-thickness: 2px; }
 img { display: block; max-width: 100%; height: auto; }
 .wrap { width: min(72rem, 100% - 2rem); margin-inline: auto; }
@@ -51,17 +54,17 @@ h1 { font-weight: 700; font-size: clamp(2.5rem, 5.5vw, 4rem); line-height: 1.04;
 .ringed::after { content: ""; position: absolute; inset: -0.08em -0.18em -0.02em -0.12em; border: 3px solid var(--today); border-radius: 50%; transform: rotate(-4deg); pointer-events: none; }
 .lede { font-size: 1.25rem; color: var(--ink-muted); max-width: var(--measure); margin: 1.5rem 0 2rem; }
 .actions { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
-.button { display: inline-flex; align-items: center; gap: 0.5rem; min-height: 3.5rem; padding: 0 1.5rem; border-radius: 12px; background: var(--action); color: var(--on-action); font-weight: 700; text-decoration: none; }
+.button { display: inline-flex; align-items: center; gap: 0.5rem; min-height: 3.5rem; padding: 0 1.75rem; border-radius: 999px; background: var(--action); color: var(--on-action); font-weight: 700; text-decoration: none; box-shadow: var(--floating); }
 .button:hover { filter: brightness(1.08); }
-.quiet { display: inline-flex; align-items: center; min-height: 3.5rem; padding: 0 1.25rem; border-radius: 12px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); font-weight: 700; text-decoration: none; }
+.quiet { display: inline-flex; align-items: center; min-height: 3.5rem; padding: 0 1.5rem; border-radius: 999px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); font-weight: 700; text-decoration: none; }
 .small { font-size: 0.9375rem; color: var(--ink-muted); margin-top: 1rem; }
 
 /* The wall and the pocket: the tablet, with a phone standing in front of it. */
 .stage { position: relative; margin-top: 3.5rem; padding-bottom: 4rem; }
-.tablet { background: var(--surface); border: 1px solid var(--rule); border-radius: 22px; padding: 12px; width: 82%; }
+.tablet { background: var(--surface); border-radius: 26px; padding: 12px; width: 82%; box-shadow: var(--raised); }
 .tablet img { border-radius: 12px; }
-.stage .phone { position: absolute; right: 0; bottom: 0; width: 24%; max-width: none; box-shadow: 0 1.5rem 3rem -1rem rgb(0 0 0 / 0.25); }
-.phone { background: var(--surface); border: 1px solid var(--rule); border-radius: 28px; padding: 9px; max-width: 18rem; margin-inline: auto; }
+.stage .phone { position: absolute; right: 0; bottom: 0; width: 24%; max-width: none; box-shadow: var(--floating); }
+.phone { background: var(--surface); border-radius: 32px; padding: 9px; max-width: 18rem; margin-inline: auto; box-shadow: var(--raised); }
 .phone img { border-radius: 20px; }
 /* Screens whose content sits at the top: shown down to where it ends, not down to an empty floor. */
 .phone.crop img { aspect-ratio: 1080 / 1150; object-fit: cover; object-position: top; border-radius: 20px 20px 12px 12px; }
@@ -87,13 +90,15 @@ h2 { font-weight: 700; font-size: clamp(1.75rem, 3.2vw, 2.375rem); line-height: 
 .pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; align-items: start; }
 .pair .phone { max-width: 16rem; }
 
-ul.sources { list-style: none; padding: 0; margin: 1rem 0 0; max-width: var(--measure); border-top: 1px solid var(--rule); }
-ul.sources li { padding: 0.75rem 0; border-bottom: 1px solid var(--rule); }
+ul.sources { list-style: none; padding: 0; margin: 1rem 0 0; max-width: var(--measure); background: var(--surface); border-radius: 22px; box-shadow: var(--raised); overflow: hidden; }
+ul.sources li { padding: 0.875rem 1.25rem; border-bottom: 1px solid var(--rule); }
+ul.sources li:last-child { border-bottom: 0; }
 ul.sources strong { display: block; }
 ul.sources span { color: var(--ink-muted); font-size: 0.9375rem; }
 
-.principles { list-style: none; padding: 0; margin: 0; max-width: 46rem; border-top: 1px solid var(--rule); }
-.principles li { padding: 1rem 0; border-bottom: 1px solid var(--rule); display: grid; grid-template-columns: minmax(0, 14rem) minmax(0, 1fr); gap: 1.5rem; }
+.principles { list-style: none; padding: 0; margin: 0; max-width: 46rem; background: var(--surface); border-radius: 22px; box-shadow: var(--raised); overflow: hidden; }
+.principles li { padding: 1.125rem 1.5rem; border-bottom: 1px solid var(--rule); display: grid; grid-template-columns: minmax(0, 12rem) minmax(0, 1fr); gap: 1.5rem; }
+.principles li:last-child { border-bottom: 0; }
 .principles strong { font-family: var(--display); font-size: 1.125rem; }
 .principles span { color: var(--ink-muted); }
 
@@ -158,8 +163,8 @@ footer.site .wrap { display: flex; justify-content: space-between; gap: 1.5rem; 
       <p class="small">Free. Android 9 or later. No account, no adverts, nothing sent over the internet.</p>
     </div>
     <div class="stage">
-      <figure class="tablet"><img src="screens/display-week.png" width="1280" height="800" alt="The kitchen display's week: a column each for Sam, Alex, Ada and Tom, a row for each day, today circled in red. Chess club, Football and Grandma visiting run across everyone's columns."></figure>
-      <figure class="phone"><img src="screens/phone-agenda.png" width="1080" height="2400" alt="The phone agenda: one event needs someone, the dentist tomorrow with Sam taking, football practice that still needs someone, and swimming with Sam taking."></figure>
+      <figure class="tablet"><img src="screens/display-week.png" width="1280" height="800" alt="The kitchen display's week: a column each for Sam, Alex, Ada and Tom, a row for each day, today lifted as a card and circled in coral. Each entry sits on its person's colour; Chess club, Football and Grandma visiting run across everyone's columns."></figure>
+      <figure class="phone"><img src="screens/phone-agenda.png" width="1080" height="2400" alt="The phone agenda: Saturday with today circled, one event that needs someone, and entries on each person's colour: the dentist tomorrow with Sam taking, football practice that still needs someone."></figure>
     </div>
   </div>
 
@@ -173,12 +178,12 @@ footer.site .wrap { display: flex; justify-content: space-between; gap: 1.5rem; 
         <figure>
           <div class="tablet"><img src="screens/display-week.png" width="1280" height="800" alt="Week view with a column for each person." loading="lazy"></div>
           <h3>The week</h3>
-          <p>People across, days down, today circled in pen. Things for everyone run across the whole row.</p>
+          <p>People across, days down. Each person's entries sit on their own colour, today lifts off the wall, and things for everyone run across the row with the whole family's colours.</p>
         </figure>
         <figure>
-          <div class="tablet"><img src="screens/display-today.png" width="1280" height="800" alt="Today view: each person, what they're doing now and what's next." loading="lazy"></div>
+          <div class="tablet"><img src="screens/display-today.png" width="1280" height="800" alt="Today view: a card for each person in their colour, with what's next." loading="lazy"></div>
           <h3>Today</h3>
-          <p>Each person: what they're doing now, and what's next. "Tomorrow 12:00 PM, Dentist, Sam taking."</p>
+          <p>A card for each person, in their colour: what they're doing now, and what's next. "Tomorrow 12:00 PM, Dentist, taking Tom."</p>
         </figure>
         <figure>
           <div class="tablet"><img src="screens/display-month.png" width="1280" height="800" alt="Month view with half term shaded." loading="lazy"></div>
@@ -199,7 +204,7 @@ footer.site .wrap { display: flex; justify-content: space-between; gap: 1.5rem; 
         </div>
         <div class="pair">
           <figure class="phone crop"><img src="screens/phone-needs-someone.png" width="1080" height="2400" alt="Needs someone: Football practice on Sunday at 2 PM, with buttons I'll take and Alex takes." loading="lazy"></figure>
-          <figure class="phone crop"><img src="screens/phone-detail.png" width="1080" height="2400" alt="Swimming, Tuesday 13 October, 5 to 6 PM, every Tuesday in term time, at the Leisure Centre, Sam taking Ada." loading="lazy"></figure>
+          <figure class="phone crop"><img src="screens/phone-detail.png" width="1080" height="2400" alt="Dentist, Sunday 11 October, 12 to 1 PM, Sam taking Tom." loading="lazy"></figure>
         </div>
       </div>
     </div>
@@ -218,7 +223,7 @@ footer.site .wrap { display: flex; justify-content: space-between; gap: 1.5rem; 
       <div class="split">
         <div>
           <h2 class="sub">Add it in the time it takes to say it.</h2>
-          <p>The add sheet opens on the title. It suggests a picture as you type, and offers who it's for, today or tomorrow, and who's taking them. The button says exactly what will happen: "Add Football practice, Sat 10 Oct 2:00 PM".</p>
+          <p>The add sheet opens on the title. It suggests a picture as you type, and offers who it's for, today or tomorrow, and who's taking them. The button says exactly what will happen: "Add Football practice, Sat 10 Oct 3:00 PM".</p>
           <p>Things can also come in from other apps:</p>
           <ul class="sources">
             <li><strong>"Add to calendar" buttons</strong><span>From tickets, bookings and email: choose House Calendar.</span></li>
@@ -227,7 +232,7 @@ footer.site .wrap { display: flex; justify-content: space-between; gap: 1.5rem; 
             <li><strong>This phone's calendars</strong><span>Copy the next eight weeks across once, then untick what you don't want.</span></li>
           </ul>
         </div>
-        <figure class="phone"><img src="screens/phone-add-sheet.png" width="1080" height="2400" alt="The add sheet: Football practice for Alex, today 2 to 3 PM, taking not needed, and the button Add Football practice, Sat 10 Oct 2:00 PM." loading="lazy"></figure>
+        <figure class="phone"><img src="screens/phone-add-sheet.png" width="1080" height="2400" alt="The add sheet: Football practice for Alex, today 3 to 4 PM, needs someone, and the button Add Football practice, Sat 10 Oct 3:00 PM." loading="lazy"></figure>
       </div>
     </div>
   </section>

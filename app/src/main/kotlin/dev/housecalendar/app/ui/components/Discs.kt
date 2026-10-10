@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
@@ -17,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -33,14 +35,19 @@ import dev.housecalendar.app.ui.theme.Fonts
 import dev.housecalendar.app.ui.theme.Hc
 import androidx.compose.ui.text.font.FontWeight
 
-/** DESIGN.md "Person disc": the member's colour behind their initial, the only place their colour fills. */
+/**
+ * DESIGN.md "Person disc": the member's colour behind their initial. A [ring] in the colour behind it keeps
+ * overlapping discs reading as separate people.
+ */
 @Composable
-fun PersonDisc(person: PersonMark, size: Dp, modifier: Modifier = Modifier, describe: Boolean = true) {
+fun PersonDisc(person: PersonMark, size: Dp, modifier: Modifier = Modifier, describe: Boolean = true, ring: Color? = null) {
     val color = Hc.colors.member(person.colorIndex)
     val initialSize = with(LocalDensity.current) { (size * INITIAL_RATIO).toSp() / fontScale }
     Box(
         modifier
             .size(size)
+            .clip(CircleShape)
+            .then(if (ring != null) Modifier.background(ring).padding(RING) else Modifier)
             .clip(CircleShape)
             .background(color.fill)
             .then(if (describe) Modifier.semantics { contentDescription = person.name } else Modifier),
@@ -59,8 +66,8 @@ fun PersonDisc(person: PersonMark, size: Dp, modifier: Modifier = Modifier, desc
  * [filledBy] arrives the dashes close and it fills with that person's colour (the one moment of delight).
  */
 @Composable
-fun EmptyDisc(size: Dp, modifier: Modifier = Modifier, filledBy: PersonMark? = null, description: String? = null) {
-    val muted = Hc.colors.inkMuted
+fun EmptyDisc(size: Dp, modifier: Modifier = Modifier, filledBy: PersonMark? = null, description: String? = null, color: Color = Hc.colors.inkMuted) {
+    val muted = color
     val closed by animateFloatAsState(if (filledBy != null) 1f else 0f, tween(CLOSE_MS), label = "close")
     Box(modifier.size(size).then(if (description != null) Modifier.semantics { contentDescription = description } else Modifier)) {
         if (filledBy != null && closed >= 1f) {
@@ -81,8 +88,8 @@ fun EmptyDisc(size: Dp, modifier: Modifier = Modifier, filledBy: PersonMark? = n
 
 /** DESIGN.md "Group disc": an ink ring with "All", for everyone. */
 @Composable
-fun GroupDisc(size: Dp, label: String, modifier: Modifier = Modifier) {
-    val ink = Hc.colors.ink
+fun GroupDisc(size: Dp, label: String, modifier: Modifier = Modifier, color: Color = Hc.colors.ink) {
+    val ink = color
     val textSize = with(LocalDensity.current) { (size * GROUP_RATIO).toSp() / fontScale }
     Box(modifier.size(size), contentAlignment = Alignment.Center) {
         Canvas(Modifier.size(size)) {
@@ -93,11 +100,11 @@ fun GroupDisc(size: Dp, label: String, modifier: Modifier = Modifier) {
     }
 }
 
-/** A row of small discs, overlapping slightly, for the people of an entry. */
+/** A row of discs, overlapping, for the people of an entry; each ringed in [ring], the colour behind them. */
 @Composable
-fun PeopleStack(people: List<PersonMark>, size: Dp, modifier: Modifier = Modifier) {
+fun PeopleStack(people: List<PersonMark>, size: Dp, modifier: Modifier = Modifier, ring: Color? = null) {
     Row(modifier, horizontalArrangement = Arrangement.spacedBy(-(size / OVERLAP))) {
-        people.forEach { PersonDisc(it, size) }
+        people.forEach { PersonDisc(it, size, ring = ring) }
     }
 }
 
@@ -130,7 +137,8 @@ private const val INITIAL_RATIO = 0.45f
 private const val GROUP_RATIO = 0.3f
 private const val DASHES = 8f
 private const val CLOSE_MS = 320
-private const val OVERLAP = 5
+private const val OVERLAP = 3
+private val RING = 2.dp
 private const val OVAL = 0.97f
 private const val TILT_DEGREES = -6f
 private const val START_ANGLE = -100f

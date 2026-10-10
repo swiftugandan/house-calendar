@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import dev.housecalendar.app.R
 
@@ -42,6 +43,7 @@ object Fonts {
 /** DESIGN.md phone type scale (sp). Nothing smaller than 14 sp anywhere. */
 @Immutable
 data class HcType(
+    val largeTitle: TextStyle,
     val headline: TextStyle,
     val title: TextStyle,
     val body: TextStyle,
@@ -53,12 +55,13 @@ data class HcType(
 )
 
 val PhoneType = HcType(
-    headline = TextStyle(fontFamily = Fonts.bricolage, fontWeight = FontWeight(600), fontSize = 26.sp, lineHeight = 32.sp),
-    title = TextStyle(fontFamily = Fonts.atkinson, fontWeight = FontWeight(700), fontSize = 18.sp, lineHeight = 24.sp),
+    largeTitle = TextStyle(fontFamily = Fonts.bricolage, fontWeight = FontWeight(700), fontSize = 34.sp, lineHeight = 40.sp, letterSpacing = (-0.01).em),
+    headline = TextStyle(fontFamily = Fonts.bricolage, fontWeight = FontWeight(700), fontSize = 24.sp, lineHeight = 30.sp),
+    title = TextStyle(fontFamily = Fonts.atkinson, fontWeight = FontWeight(700), fontSize = 17.sp, lineHeight = 22.sp),
     body = TextStyle(fontFamily = Fonts.atkinson, fontWeight = FontWeight(400), fontSize = 16.sp, lineHeight = 24.sp),
-    label = TextStyle(fontFamily = Fonts.atkinson, fontWeight = FontWeight(700), fontSize = 14.sp, lineHeight = 20.sp),
+    label = TextStyle(fontFamily = Fonts.atkinson, fontWeight = FontWeight(700), fontSize = 15.sp, lineHeight = 20.sp),
     caption = TextStyle(fontFamily = Fonts.atkinson, fontWeight = FontWeight(400), fontSize = 14.sp, lineHeight = 20.sp),
-    time = TextStyle(fontFamily = Fonts.atkinson, fontWeight = FontWeight(400), fontSize = 16.sp, lineHeight = 24.sp, fontFeatureSettings = "tnum"),
+    time = TextStyle(fontFamily = Fonts.atkinson, fontWeight = FontWeight(700), fontSize = 15.sp, lineHeight = 20.sp, fontFeatureSettings = "tnum"),
     timeStrong = TextStyle(fontFamily = Fonts.atkinson, fontWeight = FontWeight(700), fontSize = 18.sp, lineHeight = 24.sp, fontFeatureSettings = "tnum"),
     initials = TextStyle(fontFamily = Fonts.bricolage, fontWeight = FontWeight(700), fontSize = 18.sp, lineHeight = 20.sp),
 )
@@ -120,9 +123,10 @@ object Space {
 
 /** DESIGN.md radius tokens: nothing else is used. */
 object Radius {
-    val small = RoundedCornerShape(4.dp)
-    val medium = RoundedCornerShape(12.dp)
-    val sheet = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
+    val small = RoundedCornerShape(8.dp)
+    val medium = RoundedCornerShape(14.dp)
+    val large = RoundedCornerShape(22.dp)
+    val sheet = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
     val full = CircleShape
 }
 
@@ -139,25 +143,25 @@ fun HouseCalendarTheme(dark: Boolean = isSystemInDarkTheme(), content: @Composab
     val colors = if (dark) DarkColors else LightColors
     val scheme = if (dark) {
         darkColorScheme(
-            primary = colors.action, onPrimary = colors.onAction, background = colors.paper, onBackground = colors.ink,
+            primary = colors.action, onPrimary = colors.onAction, background = colors.ground, onBackground = colors.ink,
             surface = colors.surface, onSurface = colors.ink, onSurfaceVariant = colors.inkMuted, surfaceVariant = colors.sunk,
             outline = colors.rule, outlineVariant = colors.rule, error = colors.today,
             surfaceContainerLow = colors.surface, surfaceContainer = colors.surface, surfaceContainerHigh = colors.surface,
-            surfaceContainerHighest = colors.sunk,
+            surfaceContainerHighest = colors.sunk, scrim = colors.scrim,
         )
     } else {
         lightColorScheme(
-            primary = colors.action, onPrimary = colors.onAction, background = colors.paper, onBackground = colors.ink,
+            primary = colors.action, onPrimary = colors.onAction, background = colors.ground, onBackground = colors.ink,
             surface = colors.surface, onSurface = colors.ink, onSurfaceVariant = colors.inkMuted, surfaceVariant = colors.sunk,
             outline = colors.rule, outlineVariant = colors.rule, error = colors.today,
             surfaceContainerLow = colors.surface, surfaceContainer = colors.surface, surfaceContainerHigh = colors.surface,
-            surfaceContainerHighest = colors.sunk,
+            surfaceContainerHighest = colors.sunk, scrim = colors.scrim,
         )
     }
     CompositionLocalProvider(LocalColors provides colors, LocalType provides PhoneType) {
         MaterialTheme(
             colorScheme = scheme,
-            shapes = Shapes(extraSmall = Radius.small, small = Radius.small, medium = Radius.medium, large = Radius.medium),
+            shapes = Shapes(extraSmall = Radius.small, small = Radius.small, medium = Radius.medium, large = Radius.large, extraLarge = Radius.large),
             content = content,
         )
     }

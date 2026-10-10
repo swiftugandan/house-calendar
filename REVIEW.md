@@ -63,6 +63,20 @@ Status at hand-over (2026-10-10): all eight modules are built. Seven are verifie
     - An "Add to calendar" intent can start the app before the calendar has loaded. At that point the family zone isn't known yet, and the first version fell back to the phone's zone.
     - Now the raw input waits, and is converted only once the family zone is known (`IntakeModel.resolve`). A phone abroad still files a UK event at UK time.
 
+### Redesign (v0.2, "Kitchen Light")
+
+You asked for a redesign that looks like a professional designer's work. DESIGN.md records the new direction, why the old one looked unfinished, and the alternatives considered. In short:
+- **Person colour now drives the look.** Entries sit on a soft tint of their person's colour, with a coloured rail at their leading edge. An event for everyone carries every member's colour in its rail. Text stays ink, so contrast never depends on the hue. The token test checks every new pairing.
+- **Depth and shape:** cards on a cool ground with soft, cool-tinted shadows (tone and hairlines in dark mode), large titles, pill buttons and chips, and a sliding segmented control.
+- **The primary action is an ink pill, no longer House Points' green.** The two apps no longer share an accent. Person colours are unchanged, so a child still has the same colour in both apps.
+- **Kept:** the pen ring (now coral, `#C2351B`, chosen as the most vivid coral that clears 4.5:1 on every light surface), the empty disc, physical type sizes on the wall, and the 200% text reflow.
+- **On the wall:**
+  - the Week view's rows are now sized by content (empty days slim, busy days tall), so entry cards fit without "+N more" in a normal week
+  - Today is a grid of person cards
+  - Month uses tiles.
+- **Reused, not added:** three separate chip implementations became one `Pill`, and settings became grouped cards. Nothing old was left beside the new.
+- **Screenshots:** `docs/screens` holds only current-design screenshots. Old ones that weren't retaken were removed, and the website uses the new tokens.
+
 ### Process
 
 14. **`main` received the app commits early.** The socket fix branch was started from `module/app`, so merging it carried the app's first commits into `main`. Nothing was lost or rewritten. `module/app` was merged normally afterwards.

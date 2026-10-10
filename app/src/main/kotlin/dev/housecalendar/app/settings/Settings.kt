@@ -75,6 +75,9 @@ import dev.housecalendar.app.ui.components.Segmented
 import dev.housecalendar.app.ui.components.TopBar
 import dev.housecalendar.app.ui.components.Words
 import dev.housecalendar.app.ui.icons.HcIcons
+import dev.housecalendar.app.ui.components.GroupedCard
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import dev.housecalendar.app.ui.theme.Hc
 import dev.housecalendar.app.ui.theme.PhysicalType
 import dev.housecalendar.app.ui.theme.Radius
@@ -158,16 +161,23 @@ private fun Index(graph: AppGraph, state: CalendarState, onOpen: (SettingsRoute)
         Text(stringResource(R.string.newer_version_notice), style = Hc.type.body, color = Hc.colors.ink)
     }
     val display = graph.role() == DeviceRole.Display
-    LinkRow(stringResource(R.string.settings_family), HcIcons.Settings) { onOpen(SettingsRoute.Family) }
-    LinkRow(stringResource(R.string.settings_people), HcIcons.People) { onOpen(SettingsRoute.People) }
-    LinkRow(stringResource(R.string.settings_holidays), HcIcons.Holiday) { onOpen(SettingsRoute.Holidays) }
-    LinkRow(stringResource(R.string.settings_devices), HcIcons.Sync) { onOpen(SettingsRoute.Devices) }
-    if (!display) LinkRow(stringResource(R.string.settings_reminders), HcIcons.Bell) { onOpen(SettingsRoute.Reminders) }
-    if (!display) PhoneCalendarsRow(graph, state)
-    if (display) LinkRow(stringResource(R.string.settings_display), HcIcons.Display) { onOpen(SettingsRoute.Display) }
-    LinkRow(stringResource(R.string.recently_deleted), HcIcons.Undo, onRecentlyDeleted)
-    LinkRow(stringResource(R.string.settings_export), HcIcons.Share) { onOpen(SettingsRoute.Backup) }
-    LinkRow(stringResource(R.string.settings_diagnostics), HcIcons.Notes) { onOpen(SettingsRoute.Diagnostics) }
+    // DESIGN.md "Grouped lists": the family, this device, and the calendar's data.
+    GroupedCard {
+        row { LinkRow(stringResource(R.string.settings_family), HcIcons.Settings) { onOpen(SettingsRoute.Family) } }
+        row { LinkRow(stringResource(R.string.settings_people), HcIcons.People) { onOpen(SettingsRoute.People) } }
+        row { LinkRow(stringResource(R.string.settings_holidays), HcIcons.Holiday) { onOpen(SettingsRoute.Holidays) } }
+    }
+    GroupedCard {
+        row { LinkRow(stringResource(R.string.settings_devices), HcIcons.Sync) { onOpen(SettingsRoute.Devices) } }
+        if (!display) row { LinkRow(stringResource(R.string.settings_reminders), HcIcons.Bell) { onOpen(SettingsRoute.Reminders) } }
+        if (!display) row { PhoneCalendarsRow(graph, state) }
+        if (display) row { LinkRow(stringResource(R.string.settings_display), HcIcons.Display) { onOpen(SettingsRoute.Display) } }
+    }
+    GroupedCard {
+        row { LinkRow(stringResource(R.string.recently_deleted), HcIcons.Undo, onRecentlyDeleted) }
+        row { LinkRow(stringResource(R.string.settings_export), HcIcons.Share) { onOpen(SettingsRoute.Backup) } }
+        row { LinkRow(stringResource(R.string.settings_diagnostics), HcIcons.Notes) { onOpen(SettingsRoute.Diagnostics) } }
+    }
 }
 
 /** SPEC FR-55: READ_CALENDAR is asked for only here, then the review opens with the copies. */
@@ -188,17 +198,19 @@ private fun PhoneCalendarsRow(graph: AppGraph, state: CalendarState) {
     }
 }
 
+/** A row of a grouped settings card: an icon tile, the label, and a chevron. */
 @Composable
-private fun LinkRow(label: String, icon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -> Unit) {
+private fun LinkRow(label: String, icon: ImageVector, onClick: () -> Unit) {
     Row(
-        Modifier.fillMaxWidth().heightIn(min = 56.dp).clickable(role = Role.Button, onClick = onClick),
+        Modifier.fillMaxWidth().heightIn(min = 56.dp).clickable(role = Role.Button, onClick = onClick).padding(start = Space.m, end = Space.m, top = Space.s, bottom = Space.s),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.m),
     ) {
-        Icon(icon, contentDescription = null, tint = Hc.colors.ink)
-        Text(label, style = Hc.type.title, color = Hc.colors.ink, modifier = Modifier.weight(1f))
-        Icon(HcIcons.Forward, contentDescription = null, tint = Hc.colors.inkMuted)
+        Box(Modifier.size(TILE).clip(Radius.small).background(Hc.colors.sunk), contentAlignment = Alignment.Center) {
+            Icon(icon, contentDescription = null, tint = Hc.colors.ink, modifier = Modifier.size(18.dp))
+        }
+        Text(label, style = Hc.type.body.copy(fontWeight = FontWeight(600)), color = Hc.colors.ink, modifier = Modifier.weight(1f))
+        Icon(HcIcons.Forward, contentDescription = null, tint = Hc.colors.inkMuted, modifier = Modifier.size(20.dp))
     }
-    Rule()
 }
 
 /** SPEC FR-2: name, timezone and week start, each a last-writer-wins setting. */
@@ -227,22 +239,25 @@ private fun PeoplePage(graph: AppGraph, state: CalendarState) {
     var editing by remember { mutableStateOf<MemberView?>(null) }
     var newName by remember { mutableStateOf("") }
     var newKind by remember { mutableStateOf<MemberKind>(MemberKind.Child) }
-    state.allMembers().forEach { member ->
-        Row(
-            Modifier.fillMaxWidth().heightIn(min = 56.dp).clickable(role = Role.Button) { editing = member },
-            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.m),
-        ) {
-            PersonDisc(Marks.mark(member), 36.dp, describe = false)
-            Column(Modifier.weight(1f)) {
-                Text(member.name, style = Hc.type.title, color = if (member.archived) Hc.colors.inkMuted else Hc.colors.ink)
-                Text(
-                    listOfNotNull(stringResource(if (member.kind == MemberKind.Child) R.string.child else R.string.adult), if (member.archived) stringResource(R.string.archived) else null).joinToString(" · "),
-                    style = Hc.type.caption, color = Hc.colors.inkMuted,
-                )
+    GroupedCard {
+        state.allMembers().forEach { member ->
+            row {
+                Row(
+                    Modifier.fillMaxWidth().heightIn(min = 64.dp).clickable(role = Role.Button) { editing = member }.padding(horizontal = Space.m, vertical = Space.s),
+                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.m),
+                ) {
+                    PersonDisc(Marks.mark(member), 36.dp, describe = false)
+                    Column(Modifier.weight(1f)) {
+                        Text(member.name, style = Hc.type.title, color = if (member.archived) Hc.colors.inkMuted else Hc.colors.ink)
+                        Text(
+                            listOfNotNull(stringResource(if (member.kind == MemberKind.Child) R.string.child else R.string.adult), if (member.archived) stringResource(R.string.archived) else null).joinToString(" · "),
+                            style = Hc.type.caption, color = Hc.colors.inkMuted,
+                        )
+                    }
+                    Icon(HcIcons.Edit, contentDescription = stringResource(R.string.rename), tint = Hc.colors.inkMuted)
+                }
             }
-            Icon(HcIcons.Edit, contentDescription = stringResource(R.string.rename), tint = Hc.colors.inkMuted)
         }
-        Rule()
     }
     if (state.activeMembers().size < Limits.MAX_MEMBERS) {
         SectionLabel(stringResource(R.string.add_another))
@@ -299,18 +314,21 @@ private fun HolidaysPage(graph: AppGraph, state: CalendarState, now: Instant) {
     var editing by remember { mutableStateOf<HolidayEdit?>(null) }
     val holidays = state.activeHolidays()
     if (holidays.isEmpty()) Text(stringResource(R.string.holidays_empty), style = Hc.type.body, color = Hc.colors.inkMuted)
-    holidays.forEach { holiday ->
-        Row(
-            Modifier.fillMaxWidth().heightIn(min = 56.dp).clickable(role = Role.Button) { editing = HolidayEdit(holiday.id, holiday.name, holiday.first, holiday.last) },
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(Modifier.weight(1f)) {
-                Text(holiday.name, style = Hc.type.title, color = Hc.colors.ink)
-                Text(if (holiday.first == holiday.last) text.dayShort(holiday.first) else stringResource(R.string.time_range, text.dayShort(holiday.first), text.dayShort(holiday.last)), style = Hc.type.caption, color = Hc.colors.inkMuted)
+    if (holidays.isNotEmpty()) GroupedCard {
+        holidays.forEach { holiday ->
+            row {
+                Row(
+                    Modifier.fillMaxWidth().heightIn(min = 64.dp).clickable(role = Role.Button) { editing = HolidayEdit(holiday.id, holiday.name, holiday.first, holiday.last) }.padding(horizontal = Space.l, vertical = Space.s),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text(holiday.name, style = Hc.type.title, color = Hc.colors.ink)
+                        Text(if (holiday.first == holiday.last) text.dayShort(holiday.first) else stringResource(R.string.time_range, text.dayShort(holiday.first), text.dayShort(holiday.last)), style = Hc.type.caption, color = Hc.colors.inkMuted)
+                    }
+                    Icon(HcIcons.Edit, contentDescription = null, tint = Hc.colors.inkMuted)
+                }
             }
-            Icon(HcIcons.Edit, contentDescription = null, tint = Hc.colors.inkMuted)
         }
-        Rule()
     }
     val today = now.atZone(state.zone).toLocalDate()
     QuietButton(stringResource(R.string.holiday_add), { editing = HolidayEdit(null, "", today, today.plusDays(4)) }, icon = HcIcons.Plus)
@@ -370,24 +388,27 @@ private fun DevicesPage(graph: AppGraph, state: CalendarState, now: Instant) {
         QuietButton(stringResource(R.string.sync_now), { if (held != null) graph.sync.startManual(graph.localNetwork, held.family, held.key, graph.deviceName()) }, icon = HcIcons.Sync)
         QuietButton(stringResource(R.string.sync_bluetooth), { permissions.launch(NearbyPermissions.required(Build.VERSION.SDK_INT).toTypedArray()) })
     }
-    Rule()
-    DeviceRow(state.devices[graph.deviceId]?.name?.value ?: graph.deviceName(), graph.role(), stringResource(R.string.this_device), null)
-    state.devices.keys.filter { it != graph.deviceId && it !in state.removedDevices }.sortedBy { state.devices[it]?.name?.value.orEmpty() }.forEach { id ->
-        val record = state.devices.getValue(id)
-        val last = history.firstOrNull { it.peer == id && it.result == SyncHistoryEntry.Result.COMPLETED }
-        DeviceRow(
-            record.name?.value.orEmpty().ifBlank { stringResource(R.string.a_device) }, record.role?.value ?: DeviceRole.Phone,
-            last?.let { stringResource(R.string.last_synced, Words.relative(it.endedAt.toInstant(), now)) } ?: stringResource(R.string.not_synced_yet),
-            onRemove = {
-                val family = held?.family ?: return@DeviceRow
-                scope.launch {
-                    graph.record(listOf(DeviceRemoved(id)))
-                    graph.store(family, FamilyKey.generate())
-                }
-            },
-        )
+    val others = state.devices.keys.filter { it != graph.deviceId && it !in state.removedDevices }.sortedBy { state.devices[it]?.name?.value.orEmpty() }
+    GroupedCard {
+        row { DeviceRow(state.devices[graph.deviceId]?.name?.value ?: graph.deviceName(), graph.role(), stringResource(R.string.this_device), null) }
+        others.forEach { id ->
+            row {
+                val record = state.devices.getValue(id)
+                val last = history.firstOrNull { it.peer == id && it.result == SyncHistoryEntry.Result.COMPLETED }
+                DeviceRow(
+                    record.name?.value.orEmpty().ifBlank { stringResource(R.string.a_device) }, record.role?.value ?: DeviceRole.Phone,
+                    last?.let { stringResource(R.string.last_synced, Words.relative(it.endedAt.toInstant(), now)) } ?: stringResource(R.string.not_synced_yet),
+                    onRemove = {
+                        val family = held?.family ?: return@DeviceRow
+                        scope.launch {
+                            graph.record(listOf(DeviceRemoved(id)))
+                            graph.store(family, FamilyKey.generate())
+                        }
+                    },
+                )
+            }
+        }
     }
-    Rule()
     OutcomeButton(stringResource(R.string.show_code), { showCode = !showCode }, icon = HcIcons.Qr)
     if (showCode && held != null) {
         val code = PairingCode.encode(held.family, held.key)
@@ -403,8 +424,10 @@ private fun DevicesPage(graph: AppGraph, state: CalendarState, now: Instant) {
 @Composable
 private fun DeviceRow(name: String, role: DeviceRole, status: String, onRemove: (() -> Unit)?) {
     var confirming by remember { mutableStateOf(false) }
-    Row(Modifier.fillMaxWidth().heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.m)) {
-        Icon(if (role == DeviceRole.Display) HcIcons.Display else HcIcons.Phone, contentDescription = null, tint = Hc.colors.ink)
+    Row(Modifier.fillMaxWidth().heightIn(min = 64.dp).padding(start = Space.m, end = Space.xs, top = Space.s, bottom = Space.s), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.m)) {
+        Box(Modifier.size(TILE).clip(Radius.small).background(Hc.colors.sunk), contentAlignment = Alignment.Center) {
+            Icon(if (role == DeviceRole.Display) HcIcons.Display else HcIcons.Phone, contentDescription = null, tint = Hc.colors.ink, modifier = Modifier.size(18.dp))
+        }
         Column(Modifier.weight(1f)) {
             Text(name, style = Hc.type.title, color = Hc.colors.ink)
             Text(listOf(stringResource(if (role == DeviceRole.Display) R.string.role_display_short else R.string.role_phone_short), status).joinToString(" · "), style = Hc.type.caption, color = Hc.colors.inkMuted)
@@ -520,6 +543,7 @@ private fun Mono(text: String) {
     Text(text, style = Hc.type.caption.copy(fontFamily = FontFamily.Monospace), color = Hc.colors.ink)
 }
 
+private val TILE = 32.dp
 private const val QR_PX = 720
 private const val FIVE_CM_INCHES = 50f / 25.4f
 private const val PERCENT = 100f

@@ -69,6 +69,8 @@ import dev.housecalendar.app.ui.components.Words
 import dev.housecalendar.app.ui.icons.HcIcons
 import dev.housecalendar.app.ui.theme.DayHours
 import dev.housecalendar.app.ui.theme.DisplayType
+import dev.housecalendar.app.ui.theme.Depth
+import dev.housecalendar.app.ui.theme.lifted
 import dev.housecalendar.app.ui.theme.Hc
 import dev.housecalendar.app.ui.theme.PhysicalType
 import dev.housecalendar.app.ui.theme.Radius
@@ -151,7 +153,7 @@ fun DisplayRoot(graph: AppGraph, state: CalendarState, now: Instant) {
     Box(
         Modifier
             .fillMaxSize()
-            .background(Hc.colors.paper)
+            .background(Hc.colors.ground)
             .pointerInput(Unit) {
                 awaitEachGesture {
                     awaitFirstDown(pass = PointerEventPass.Initial, requireUnconsumed = false)
@@ -250,7 +252,7 @@ private fun Board(
 @Composable
 private fun AddDisc(onAdd: () -> Unit, modifier: Modifier) {
     Box(
-        modifier.padding(Space.l).size(Space.displayTouch).clip(Radius.full).background(Hc.colors.action).clickable(role = Role.Button, onClickLabel = stringResource(R.string.add), onClick = onAdd),
+        modifier.padding(Space.l).size(Space.displayTouch).lifted(Depth.FLOATING, Radius.full).clip(Radius.full).background(Hc.colors.action).clickable(role = Role.Button, onClickLabel = stringResource(R.string.add), onClick = onAdd),
         contentAlignment = Alignment.Center,
     ) { Icon(HcIcons.Plus, contentDescription = stringResource(R.string.add), tint = Hc.colors.onAction, modifier = Modifier.size(32.dp)) }
 }

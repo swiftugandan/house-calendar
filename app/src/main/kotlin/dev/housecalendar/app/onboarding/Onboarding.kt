@@ -58,6 +58,9 @@ import dev.housecalendar.app.ui.components.SectionLabel
 import dev.housecalendar.app.ui.components.Segmented
 import dev.housecalendar.app.ui.components.TopBar
 import dev.housecalendar.app.ui.icons.HcIcons
+import dev.housecalendar.app.ui.components.HcCard
+import dev.housecalendar.app.ui.components.colourRail
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import dev.housecalendar.app.ui.theme.Hc
 import dev.housecalendar.app.ui.theme.Space
 import dev.housecalendar.contracts.CalendarIds
@@ -118,15 +121,41 @@ private fun Welcome(dayOfMonth: Int, onStart: () -> Unit, onJoin: () -> Unit) {
         Spacer(Modifier.height(Space.m))
         QuietButton(stringResource(R.string.welcome_join), onJoin, Modifier.fillMaxWidth())
     }) {
-        Spacer(Modifier.height(Space.xxxl))
-        Box(Modifier.size(88.dp), contentAlignment = Alignment.Center) {
-            Text(dayOfMonth.toString(), style = Hc.type.headline.copy(fontSize = Hc.type.headline.fontSize * 2), color = Hc.colors.ink)
-            PenRing(88.dp)
+        Spacer(Modifier.height(Space.xl))
+        Box(Modifier.size(64.dp), contentAlignment = Alignment.Center) {
+            Text(dayOfMonth.toString(), style = Hc.type.largeTitle, color = Hc.colors.ink)
+            PenRing(64.dp)
         }
-        Text(stringResource(R.string.welcome_title), style = Hc.type.headline, color = Hc.colors.ink)
+        Text(stringResource(R.string.welcome_title), style = Hc.type.largeTitle, color = Hc.colors.ink)
         Text(stringResource(R.string.welcome_body), style = Hc.type.body, color = Hc.colors.inkMuted)
+        WelcomeSamples()
     }
 }
+
+/** The product, shown rather than described: three entries as the app draws them, in three family colours. */
+@Composable
+private fun WelcomeSamples() {
+    val colors = Hc.colors
+    val samples = listOf(
+        Triple(R.string.welcome_sample_1_title, R.string.welcome_sample_1_detail, listOf(colors.member(0))),
+        Triple(R.string.welcome_sample_2_title, R.string.welcome_sample_2_detail, listOf(colors.member(3))),
+        Triple(R.string.welcome_sample_3_title, R.string.welcome_sample_3_detail, (0 until SAMPLE_FAMILY).map { colors.member(it) }),
+    )
+    Column(Modifier.fillMaxWidth().padding(top = Space.s).clearAndSetSemantics { }, verticalArrangement = Arrangement.spacedBy(Space.s)) {
+        samples.forEachIndexed { index, (title, detail, people) ->
+            val fill = if (people.size > 1) colors.band else people.first().tint
+            HcCard(Modifier.fillMaxWidth().padding(start = (index * SAMPLE_STEP).dp), color = fill) {
+                Column(Modifier.fillMaxWidth().colourRail(people.map { it.fill }).padding(start = 22.dp, end = Space.l, top = Space.m, bottom = Space.m)) {
+                    Text(stringResource(title), style = Hc.type.title, color = colors.ink)
+                    Text(stringResource(detail), style = Hc.type.caption, color = colors.inkMuted)
+                }
+            }
+        }
+    }
+}
+
+private const val SAMPLE_FAMILY = 4
+private const val SAMPLE_STEP = 14
 
 @Composable
 private fun FamilyName(name: String, onName: (String) -> Unit, onBack: () -> Unit, onNext: () -> Unit) {

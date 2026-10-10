@@ -175,6 +175,13 @@
     <!-- Onboarding (SPEC FR-1, FR-4, FR-5) -->
     <string name="welcome_title">The family calendar, on the kitchen wall and in your pocket</string>
     <string name="welcome_body">Everything stays on your own devices. They keep each other up to date over your home Wi-Fi, with no account and no internet.</string>
+    <!-- The welcome page's illustration: three sample entries, as they'd look in the app. -->
+    <string name="welcome_sample_1_title">Swimming</string>
+    <string name="welcome_sample_1_detail">Tue 5:00 PM · Sam taking</string>
+    <string name="welcome_sample_2_title">Dentist</string>
+    <string name="welcome_sample_2_detail">Thu 4:20 PM · Needs someone</string>
+    <string name="welcome_sample_3_title">Grandma visiting</string>
+    <string name="welcome_sample_3_detail">Sat · Everyone</string>
     <string name="welcome_start">Start a family calendar</string>
     <string name="welcome_join">Join one from another device</string>
     <string name="family_name">Family name</string>
@@ -211,6 +218,8 @@
 
     <!-- Sync (SPEC FR-41 to FR-46) -->
     <string name="sync_title">Devices</string>
+    <!-- The phone header's second line: the month, then the sync line. -->
+    <string name="month_and_sync">%1$s · %2$s</string>
     <string name="sync_up_to_date_with">Up to date with %1$s · %2$s</string>
     <string name="sync_never">Not synced with another device yet</string>
     <string name="sync_running">Syncing with %1$s…</string>
