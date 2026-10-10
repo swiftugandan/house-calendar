@@ -299,7 +299,7 @@ Added 2026-10-10 at the user's request: activities can come from other apps on t
   - a floating time or a `DATE` as written
   - an all-day insert intent by reading its begin time's date in UTC (Android's convention for all-day events [R21]).
 
-  A converted time whose minutes don't fall on the family's 5-minute grid is kept exactly. The grid only applies to the pickers.
+  Converted times are kept to the minute, even when they're off the pickers' 5-minute steps.
 - **FR-54:** An event that comes with an iCalendar `UID` (from a file, or from a phone calendar's `UID_2445`) MUST get the deterministic ID `UUIDv5("ext:" + uid)` [R22]. If an event with that ID already exists, the draft says "Already on the calendar" and confirming it records an update rather than a second event.
   - So importing the same school file twice, or on two phones, gives one event per item. This is the same technique House Points uses for chores recorded on two phones.
 - **FR-55:** A phone MAY copy events from its own device calendars (Google and others, through the Android calendar provider) [R21]:
@@ -415,7 +415,7 @@ Both are all day, so the review list offers **Add as holidays**. Accepting gives
 - the holiday "INSET day" on 2 Nov
 - the holiday "Christmas holidays" from 21 Dec to 3 Jan (`DTEND` is exclusive for `DATE` values [R2]).
 
-Swimming then has no occurrences on those days, because it is term time only. Opening the same file again on phone B shows both items as "Already on the calendar" (FR-54).
+Swimming, being term time only, then has no occurrences on 22 or 29 Dec. Opening the same file again on phone B shows both items as "Already on the calendar" (FR-54).
 
 ### Example 14: an invite in another timezone
 
