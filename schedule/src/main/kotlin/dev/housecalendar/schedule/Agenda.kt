@@ -12,9 +12,7 @@ import dev.housecalendar.contracts.Who
 import java.time.LocalDate
 
 /** An inclusive range of days. */
-public data class DateWindow(val from: LocalDate, val to: LocalDate) {
-    public fun contains(day: LocalDate): Boolean = day in from..to
-}
+public data class DateWindow(val from: LocalDate, val to: LocalDate)
 
 /** Identifies one occurrence: its event and its original date (SPEC glossary). */
 public data class OccurrenceRef(val event: EventId, val occurrence: LocalDate)
@@ -51,8 +49,6 @@ public data class AgendaEntry(
     val taker: MemberId? get() = (taking as? Taking.Person)?.member
 
     public fun involves(member: MemberId): Boolean = member in people
-
-    public fun occupies(date: LocalDate): Boolean = date in day..lastDay
 }
 
 /** `(state, window) → agenda`, a pure function of its inputs (SPEC FR-26, NFR-DET-1). */
@@ -62,7 +58,7 @@ public object Agenda {
         val lookBack = window.from.minusDays(Limits.MAX_SPAN_DAYS.toLong())
         val everyone = state.activeMembers().map { it.id }
         return state.liveSeries()
-            .filter { it.earliest <= window.to && it.latest >= lookBack || it.edits.isNotEmpty() }
+            .filter { (it.earliest <= window.to && it.latest >= lookBack) || it.edits.isNotEmpty() }
             .flatMap { series -> entriesOf(state, series, window, lookBack, everyone) }
             .sortedWith(ORDER)
     }

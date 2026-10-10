@@ -136,7 +136,6 @@ internal class Series private constructor(
             }
             return Series(id, record, start, segments, state.edits[id].orEmpty(), state::isHoliday)
         }
-
     }
 }
 

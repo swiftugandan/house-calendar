@@ -1,7 +1,6 @@
 package dev.housecalendar.schedule
 
 import dev.housecalendar.contracts.DeviceId
-import dev.housecalendar.contracts.DeviceRole
 import dev.housecalendar.contracts.EventId
 import dev.housecalendar.contracts.HolidayId
 import dev.housecalendar.contracts.Limits
@@ -59,17 +58,11 @@ public data class CalendarState(
 
     public fun ownerOf(device: DeviceId): MemberId? = (devices[device]?.owner?.value as? Owner.Member)?.member
 
-    public fun roleOf(device: DeviceId): DeviceRole? = devices[device]?.role?.value
-
-    public fun deviceName(device: DeviceId): String = devices[device]?.name?.value.orEmpty()
-
     /** Every named member, archived or not, in the order they were added. */
     public fun allMembers(): List<MemberView> = memberViews
 
     /** Members shown in pickers and the display's columns (SPEC FR-7). */
     public fun activeMembers(): List<MemberView> = memberViews.filterNot { it.archived }
-
-    public fun member(id: MemberId): MemberView? = memberViews.firstOrNull { it.id == id }
 
     public fun recentlyDeleted(): List<DeletedEvent> = events.mapNotNull { (id, record) ->
         val deleted = record.deleted?.takeIf { it.value } ?: return@mapNotNull null
