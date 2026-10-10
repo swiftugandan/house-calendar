@@ -77,6 +77,10 @@ You asked for a redesign that looks like a professional designer's work. DESIGN.
 - **Reused, not added:** three separate chip implementations became one `Pill`, and settings became grouped cards. Nothing old was left beside the new.
 - **Screenshots:** `docs/screens` holds only current-design screenshots. Old ones that weren't retaken were removed, and the website uses the new tokens.
 
+### Updates (after 0.2.0)
+
+Settings now ends with an About card: "Check for a newer version", the installed version, and a note on updating (SPEC NFR-OPS-4). This matches House Points: the link opens the releases page in the browser, and the app itself still never goes online. Downloading and installing from inside the app would need the INTERNET permission and an installer flow, which would break the no-internet promise (NG-1), so I didn't build that. If no browser is available, the page address is shown instead.
+
 ### Process
 
 14. **`main` received the app commits early.** The socket fix branch was started from `module/app`, so merging it carried the app's first commits into `main`. Nothing was lost or rewritten. `module/app` was merged normally afterwards.
