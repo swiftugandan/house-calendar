@@ -2,7 +2,7 @@ package dev.housecalendar.sync
 
 import java.security.SecureRandom
 
-/** The 256-bit secret shared by every phone in a family (SPEC FR-3). Never printed. */
+/** The 256-bit secret shared by every phone in a family (SPEC FR-4). Never printed. */
 public class FamilyKey private constructor(private val material: ByteArray) {
     public fun bytes(): ByteArray = material.copyOf()
 

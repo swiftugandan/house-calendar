@@ -7,7 +7,7 @@ import java.io.File
 import java.util.UUID
 
 /**
- * This installation's permanent identity (SPEC FR-2). It lives in `noBackupFilesDir`, which Auto Backup
+ * This installation's permanent identity (SPEC FR-3). It lives in `noBackupFilesDir`, which Auto Backup
  * always excludes, so a backup restored onto another phone gets a new identity rather than a copy.
  * An unreadable file is replaced with a fresh identity, which is always safe: the new identity simply
  * starts its own sequence.

@@ -22,7 +22,7 @@ public sealed interface ExportResult {
 }
 
 /**
- * Passphrase-encrypted export of the whole op log (SPEC FR-46, SAD §3.4).
+ * Passphrase-encrypted export of the whole op log (SPEC FR-48, SAD §3.4).
  *
  * File: `"HCX1" ‖ salt(16) ‖ iterations u32 ‖ iv(12) ‖ AES-256-GCM(payload)`, where the key is
  * PBKDF2-HMAC-SHA256(passphrase, salt, iterations) [SAD R20] and the header is the associated data.
