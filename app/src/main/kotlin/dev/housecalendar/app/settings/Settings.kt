@@ -146,9 +146,28 @@ private fun Index(graph: AppGraph, state: CalendarState, onOpen: (SettingsRoute)
     LinkRow(stringResource(R.string.settings_holidays), HcIcons.Holiday) { onOpen(SettingsRoute.Holidays) }
     LinkRow(stringResource(R.string.settings_devices), HcIcons.Sync) { onOpen(SettingsRoute.Devices) }
     if (!display) LinkRow(stringResource(R.string.settings_reminders), HcIcons.Bell) { onOpen(SettingsRoute.Reminders) }
+    if (!display) PhoneCalendarsRow(graph, state)
     if (display) LinkRow(stringResource(R.string.settings_display), HcIcons.Display) { onOpen(SettingsRoute.Display) }
     LinkRow(stringResource(R.string.recently_deleted), HcIcons.Undo, onRecentlyDeleted)
     LinkRow(stringResource(R.string.settings_diagnostics), HcIcons.Notes) { onOpen(SettingsRoute.Diagnostics) }
+}
+
+/** SPEC FR-55: READ_CALENDAR is asked for only here, then the review opens with the copies. */
+@Composable
+private fun PhoneCalendarsRow(graph: AppGraph, state: CalendarState) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val scope = rememberCoroutineScope()
+    fun copy() {
+        scope.launch {
+            val drafts = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { dev.housecalendar.app.intake.DeviceCalendars.read(context, graph.clock.now(), state.zone) }
+            graph.offerIncoming(dev.housecalendar.app.intake.Incoming.Many(drafts, copies = true))
+        }
+    }
+    val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted -> if (granted) copy() }
+    LinkRow(stringResource(R.string.settings_import_calendar), HcIcons.Import) {
+        if (androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.READ_CALENDAR) == android.content.pm.PackageManager.PERMISSION_GRANTED) copy()
+        else permission.launch(android.Manifest.permission.READ_CALENDAR)
+    }
 }
 
 @Composable
@@ -269,7 +288,7 @@ private fun HolidaysPage(graph: AppGraph, state: CalendarState, now: Instant) {
         ) {
             Column(Modifier.weight(1f)) {
                 Text(holiday.name, style = Hc.type.title, color = Hc.colors.ink)
-                Text(stringResource(R.string.time_range, text.dayShort(holiday.first), text.dayShort(holiday.last)), style = Hc.type.caption, color = Hc.colors.inkMuted)
+                Text(if (holiday.first == holiday.last) text.dayShort(holiday.first) else stringResource(R.string.time_range, text.dayShort(holiday.first), text.dayShort(holiday.last)), style = Hc.type.caption, color = Hc.colors.inkMuted)
             }
             Icon(HcIcons.Edit, contentDescription = null, tint = Hc.colors.inkMuted)
         }

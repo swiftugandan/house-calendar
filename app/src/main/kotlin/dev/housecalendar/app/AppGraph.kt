@@ -7,6 +7,7 @@ import dev.housecalendar.app.calendar.CalendarSnapshot
 import dev.housecalendar.app.calendar.Clock
 import dev.housecalendar.app.calendar.NewMember
 import dev.housecalendar.app.calendar.RecordResult
+import dev.housecalendar.app.intake.Incoming
 import dev.housecalendar.app.reminders.ReminderScheduler
 import dev.housecalendar.app.sync.BackgroundSync
 import dev.housecalendar.app.sync.LinkFactory
@@ -90,6 +91,19 @@ class AppGraph(context: Context) {
     val bluetooth = LinkFactory { family, name, role -> NearbyPeerLink(NearbyLink(appContext, family, deviceId, name, role)) }
 
     private val foreground = MutableStateFlow(false)
+
+    private val _incoming = MutableStateFlow<Incoming?>(null)
+
+    /** What another app handed over, until the phone's screens have shown it (SPEC FR-49 to FR-55). */
+    val incoming: StateFlow<Incoming?> = _incoming.asStateFlow()
+
+    fun offerIncoming(value: Incoming?) {
+        if (value != null) _incoming.value = value
+    }
+
+    fun takeIncoming() {
+        _incoming.value = null
+    }
 
     init {
         scope.launch {

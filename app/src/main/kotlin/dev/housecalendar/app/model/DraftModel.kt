@@ -126,6 +126,17 @@ object DraftModel {
         weekdays = if (kind == RepeatKind.WEEKLY || kind == RepeatKind.FORTNIGHTLY) draft.weekdays.ifEmpty { setOf(draft.day.dayOfWeek) } else draft.weekdays,
     )
 
+    /** A rule from elsewhere (an import): the sheet's closest choice, keeping the rule itself when it has none. */
+    fun withRule(draft: Draft, rule: Repeat): Draft {
+        val bare = RepeatRules.withoutUntil(rule)
+        return draft.copy(
+            repeatKind = kindOf(bare, draft.day),
+            weekdays = (bare as? Repeat.Weekly)?.days ?: draft.weekdays,
+            custom = bare,
+            ends = RepeatRules.until(rule)?.let(Ends::On) ?: Ends.Never,
+        )
+    }
+
     /** SPEC FR-13: a suggestion fills in what an earlier event had, but not the day being added. */
     fun applySuggestion(draft: Draft, suggestion: Suggestion): Draft {
         val slotted = when (val slot = suggestion.slot) {
@@ -167,7 +178,7 @@ object DraftModel {
         }
         return EventDraft(
             title = draft.title.trim(), icon = draft.icon, start = draft.day, slot = slotOf(draft),
-            repeat = if (RepeatRules.repeats(rule)) withUntil(rule, until) else rule,
+            repeat = if (RepeatRules.repeats(rule)) RepeatRules.withUntil(rule, until) else rule,
             termTimeOnly = draft.termTimeOnly && RepeatRules.repeats(rule), who = draft.who, taking = draft.taking,
             place = draft.place.trim(), notes = draft.notes.trim(), reminders = draft.reminders,
         )
@@ -253,7 +264,7 @@ object DraftModel {
 
     private fun toRepeatWithEnd(draft: Draft): Repeat {
         val rule = repeatOf(draft)
-        return withUntil(rule, (draft.ends as? Ends.On)?.date)
+        return RepeatRules.withUntil(rule, (draft.ends as? Ends.On)?.date)
     }
 
     private fun kindOf(rule: Repeat, day: LocalDate): RepeatKind = when (rule) {
@@ -274,14 +285,6 @@ object DraftModel {
         is Repeat.Unrecognised -> RepeatKind.CUSTOM
     }
 
-    private fun withUntil(rule: Repeat, until: LocalDate?): Repeat = when (rule) {
-        Repeat.Never, is Repeat.Unrecognised -> rule
-        is Repeat.Daily -> rule.copy(until = until)
-        is Repeat.Weekly -> rule.copy(until = until)
-        is Repeat.MonthlyOnDay -> rule.copy(until = until)
-        is Repeat.MonthlyOnWeekday -> rule.copy(until = until)
-        is Repeat.Yearly -> rule.copy(until = until)
-    }
 
     private const val LAST = -1
     private const val MAX_ORDINAL = 4

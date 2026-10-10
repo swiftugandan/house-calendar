@@ -28,24 +28,24 @@ class IntakeModelTest {
     @Test
     fun `an incoming draft fills the add sheet, keeping what it doesn't say from the blank sheet`() {
         val incoming = IncomingDraft("Swimming lessons", day = date("2026-10-13"), slot = timed("17:00", "18:00"), place = "Leisure Centre")
-        val draft = IntakeModel.toDraft(incoming, family.state(), now)
+        val draft = IntakeModel.toDraft(incoming, now)
         assertEquals("Swimming lessons", draft.title)
         assertEquals(IconKey("swim"), draft.icon)
         assertEquals(date("2026-10-13"), draft.day)
         assertEquals(time("17:00"), draft.start)
         assertEquals("Leisure Centre", draft.place)
         assertEquals(Who.Members(emptySet()), draft.who)
-        val bare = IntakeModel.toDraft(IncomingDraft("Forms"), family.state(), now)
+        val bare = IntakeModel.toDraft(IncomingDraft("Forms"), now)
         assertEquals(date("2026-10-10"), bare.day)
         assertEquals(time("15:00"), bare.start)
     }
 
     @Test
     fun `a counted rule becomes after N times and an until becomes ends on`() {
-        val counted = IntakeModel.toDraft(IncomingDraft("Swim", day = date("2026-10-06"), slot = timed("17:00", "18:00"), repeat = Repeat.Weekly(1, setOf(DayOfWeek.TUESDAY)), count = 10), family.state(), now)
+        val counted = IntakeModel.toDraft(IncomingDraft("Swim", day = date("2026-10-06"), slot = timed("17:00", "18:00"), repeat = Repeat.Weekly(1, setOf(DayOfWeek.TUESDAY)), count = 10), now)
         assertEquals(RepeatKind.WEEKLY, counted.repeatKind)
         assertEquals(Ends.After(10), counted.ends)
-        val until = IntakeModel.toDraft(IncomingDraft("Swim", day = date("2026-10-06"), slot = timed("17:00", "18:00"), repeat = Repeat.Weekly(2, setOf(DayOfWeek.TUESDAY), until = date("2026-12-15"))), family.state(), now)
+        val until = IntakeModel.toDraft(IncomingDraft("Swim", day = date("2026-10-06"), slot = timed("17:00", "18:00"), repeat = Repeat.Weekly(2, setOf(DayOfWeek.TUESDAY), until = date("2026-12-15"))), now)
         assertEquals(RepeatKind.FORTNIGHTLY, until.repeatKind)
         assertEquals(Ends.On(date("2026-12-15")), until.ends)
     }
@@ -61,7 +61,7 @@ class IntakeModelTest {
         assertEquals(CalendarIds.externalEvent("fair@school"), fair.eventId)
         assertEquals(Who.Everyone, fair.who)
         val club = payloads.filterIsInstance<EventUpsert>()[1]
-        assertEquals(Repeat.Weekly(1, setOf(DayOfWeek.TUESDAY), until = date("2026-10-27")), club.repeat)
+        assertEquals(Repeat.Weekly(1, setOf(DayOfWeek.TUESDAY), until = date("2026-10-20")), club.repeat)
         assertEquals(listOf(EventEdit(club.eventId, occurrence = date("2026-10-13"), cancelled = true)), payloads.filterIsInstance<EventEdit>())
     }
 
