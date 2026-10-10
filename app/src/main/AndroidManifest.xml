@@ -52,7 +52,9 @@
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Local files only (attachments, downloads): the app never fetches from the web (SPEC NG-1). -->
+                <data android:scheme="content" />
+                <data android:scheme="file" />
                 <data android:mimeType="text/calendar" />
             </intent-filter>
             <intent-filter>

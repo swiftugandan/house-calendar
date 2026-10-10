@@ -43,6 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontFamily
@@ -490,7 +491,7 @@ private fun SizeBar(sizePercent: Int) {
     val metrics = LocalContext.current.resources.displayMetrics
     val ppi = PhysicalType.ppi(metrics.xdpi, metrics.densityDpi)
     val px = FIVE_CM_INCHES * ppi * sizePercent / PERCENT
-    val width = with(androidx.compose.ui.platform.LocalDensity.current) { px.toDp() }
+    val width = with(LocalDensity.current) { px.toDp() }
     Box(Modifier.size(width, 12.dp).background(Hc.colors.ink))
 }
 
@@ -499,10 +500,11 @@ private fun SizeBar(sizePercent: Int) {
 private fun DiagnosticsPage(graph: AppGraph, state: CalendarState) {
     val history by graph.history.collectAsState()
     val settings by graph.settings.collectAsState()
+    val key by graph.key.collectAsState()
     val vector = remember { mutableStateOf<String?>(null) }
     LaunchedEffect(state) { vector.value = graph.opLog.vector().toString() }
     Mono("device ${graph.deviceId}")
-    Mono("role ${graph.role()}  family ${(graph.key.value as? KeyState.Held)?.family}")
+    Mono("role ${state.devices[graph.deviceId]?.role?.value}  family ${(key as? KeyState.Held)?.family}")
     Mono("zone ${state.zone.id}  members ${state.allMembers().size}  events ${state.events.size}  holidays ${state.holidays.size}")
     Mono("vector ${vector.value.orEmpty()}")
     Mono("unknown ${state.diagnostics.unknownByType}  malformed ${state.diagnostics.malformed}  newest schema ${state.diagnostics.newestSchema}")
