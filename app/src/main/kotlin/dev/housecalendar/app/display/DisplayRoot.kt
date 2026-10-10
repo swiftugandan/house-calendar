@@ -14,6 +14,7 @@ import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -45,6 +46,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -211,11 +213,19 @@ private fun Board(
     val history by graph.history.collectAsState()
     val syncing by graph.sync.state.collectAsState()
     Column(Modifier.fillMaxSize().padding(horizontal = Space.displayGutter, vertical = Space.m)) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text(text.dayLong(zoned.toLocalDate()), style = type.glanceDisplay, color = Hc.colors.ink, maxLines = 1, modifier = Modifier.weight(1f))
-            Text(Words.time(zoned.toLocalTime()), style = type.glanceTime, color = Hc.colors.ink)
+        val clockStyle = type.glanceDisplay.copy(fontFeatureSettings = "tnum")
+        BoxWithConstraints(Modifier.fillMaxWidth()) {
+            val measurer = rememberTextMeasurer()
+            val clock = Words.time(zoned.toLocalTime())
+            val full = text.dayLong(zoned.toLocalDate())
+            val room = constraints.maxWidth - measurer.measure(clock, clockStyle).size.width - with(LocalDensity.current) { Space.xl.roundToPx() }
+            val date = if (measurer.measure(full, type.glanceDisplay).size.width <= room) full else text.dayLongShortMonth(zoned.toLocalDate())
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text(date, style = type.glanceDisplay, color = Hc.colors.ink, maxLines = 1, softWrap = false, modifier = Modifier.weight(1f))
+                Text(clock, style = clockStyle, color = Hc.colors.ink, maxLines = 1, softWrap = false)
+            }
         }
-        Row(Modifier.fillMaxWidth().padding(vertical = Space.s), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.m)) {
+        Row(Modifier.fillMaxWidth().padding(vertical = Space.xs), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.m)) {
             Text(syncLine(syncing, history, state, now), style = type.detailCaption, color = Hc.colors.inkMuted, maxLines = 1, modifier = Modifier.weight(1f))
             Segmented(
                 listOf(DisplayView.WEEK to stringResource(R.string.view_week), DisplayView.TODAY to stringResource(R.string.view_today), DisplayView.MONTH to stringResource(R.string.view_month)),

@@ -121,6 +121,8 @@ data class BoardEntry(
     val icon: IconKey,
     val taking: TakingMark,
     val place: String,
+    /** The people involved, for "Taking Ada" on the taker's own row. */
+    val people: List<PersonMark>,
 )
 
 /** A member's now and next; [person] is null for the "everyone" row. */
@@ -137,7 +139,7 @@ object TodayBoardModel {
         val entries = Agenda.resolve(state, DateWindow(today, today.plusDays(NEXT_DAYS)))
         fun board(entry: AgendaEntry): BoardEntry {
             val timed = entry.slot as? Slot.Timed
-            return BoardEntry(entry.key, entry.day, timed == null, timed?.start, timed?.end, entry.title, entry.icon, marks.taking(entry.taking), entry.place)
+            return BoardEntry(entry.key, entry.day, timed == null, timed?.start, timed?.end, entry.title, entry.icon, marks.taking(entry.taking), entry.place, marks.people(entry.people))
         }
         fun rowFor(mine: List<AgendaEntry>): Pair<BoardEntry?, BoardEntry?> {
             val current = mine.firstOrNull { Marks.happening(it, state, now) }

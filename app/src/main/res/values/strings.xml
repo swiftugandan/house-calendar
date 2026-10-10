@@ -20,6 +20,7 @@
     <string name="taking_person">%1$s taking</string>
     <string name="needs_someone">Needs someone</string>
     <string name="taking_label">Taking</string>
+    <string name="taking_them">Taking %1$s</string>
     <string name="taking_not_needed">Not needed</string>
     <string name="taking_someone_else">Someone else…</string>
     <string name="ill_take">I\'ll take</string>

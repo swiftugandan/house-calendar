@@ -127,10 +127,17 @@ private fun DayLabel(day: OrganiserDay, width: Dp) {
             }
         }
         Column(Modifier.padding(Space.s)) {
-            Text(LocalDateText.current.weekdayShort(day.date), style = type.detail, color = Hc.colors.inkMuted)
-            Box(contentAlignment = Alignment.Center) {
-                Text(day.date.dayOfMonth.toString(), style = type.glanceDisplay.copy(fontSize = type.glanceDisplay.fontSize * DAY_NUMBER_SCALE, lineHeight = type.glanceDisplay.lineHeight * DAY_NUMBER_SCALE), color = Hc.colors.ink)
-                if (day.word == DayWord.TODAY) PenRing(em(type.glanceDisplay.fontSize) * PEN_RING_EMS)
+            if (day.word == DayWord.TODAY) {
+                Text(LocalDateText.current.weekdayShort(day.date), style = type.detail, color = Hc.colors.inkMuted)
+                Box(contentAlignment = Alignment.Center) {
+                    Text(day.date.dayOfMonth.toString(), style = type.glanceDisplay.copy(fontSize = type.glanceDisplay.fontSize * DAY_NUMBER_SCALE, lineHeight = type.glanceDisplay.lineHeight * DAY_NUMBER_SCALE), color = Hc.colors.ink)
+                    PenRing(em(type.glanceDisplay.fontSize) * PEN_RING_EMS)
+                }
+            } else {
+                Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(Space.xs)) {
+                    Text(LocalDateText.current.weekdayShort(day.date), style = type.detail, color = Hc.colors.inkMuted)
+                    Text(day.date.dayOfMonth.toString(), style = type.detailStrong, color = Hc.colors.ink)
+                }
             }
             if (holiday != null) Text(holiday, style = type.detailCaption, color = Hc.colors.inkMuted, maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
@@ -163,12 +170,13 @@ private fun EveryoneBand(entries: List<CellEntry>, onOpen: (OccurrenceRef) -> Un
 private fun Cell(entries: List<CellEntry>, modifier: Modifier, onOpen: (OccurrenceRef) -> Unit) {
     val type = LocalDisplayType.current
     val density = LocalDensity.current
-    BoxWithConstraints(modifier.padding(horizontal = Space.xs, vertical = Space.xs).clipToBounds()) {
+    BoxWithConstraints(modifier.padding(horizontal = Space.xs, vertical = 2.dp).clipToBounds()) {
         val lineHeight = with(density) { type.detail.lineHeight.toDp() }
-        val oneLine = maxWidth > em(type.detailSize) * ONE_LINE_EMS
-        val perEntry = if (oneLine) 1 else 2
         val lines = floor(maxHeight / lineHeight).toInt().coerceAtLeast(1)
-        val fit = if (entries.size * perEntry <= lines) entries.size else ((lines - 1) / perEntry).coerceAtLeast(0)
+        // Two lines (time above title) only when every entry fits that way; an entry shown with a shortened
+        // title beats "+1 more" (DESIGN.md "Entry lines in narrow columns").
+        val oneLine = maxWidth > em(type.detailSize) * ONE_LINE_EMS || entries.size * 2 > lines
+        val fit = if (entries.size <= lines) entries.size else (lines - 1).coerceAtLeast(0)
         Column {
             entries.take(fit).forEach { entry -> EntryLine(entry, oneLine, onOpen) }
             if (fit < entries.size) Text(stringResource(R.string.more_count, entries.size - fit), style = type.detailCaption, color = Hc.colors.inkMuted)
@@ -227,8 +235,10 @@ fun TodayBoardView(state: CalendarState, now: Instant, onOpen: (OccurrenceRef) -
                     }
                 }
                 Column(Modifier.weight(1f)) {
-                    Text(stringResource(R.string.next), style = type.detailCaption, color = Hc.colors.inkMuted)
-                    row.next?.let { next -> NextLine(next, state, now, onOpen) }
+                    row.next?.let { next ->
+                        Text(stringResource(R.string.next), style = type.detailCaption, color = Hc.colors.inkMuted)
+                        NextLine(next, row.person, state, now, onOpen)
+                    }
                 }
             }
             Rule()
@@ -237,7 +247,7 @@ fun TodayBoardView(state: CalendarState, now: Instant, onOpen: (OccurrenceRef) -
 }
 
 @Composable
-private fun NextLine(next: BoardEntry, state: CalendarState, now: Instant, onOpen: (OccurrenceRef) -> Unit) {
+private fun NextLine(next: BoardEntry, person: dev.housecalendar.app.model.PersonMark?, state: CalendarState, now: Instant, onOpen: (OccurrenceRef) -> Unit) {
     val type = LocalDisplayType.current
     val today = now.atZone(state.zone).toLocalDate()
     Column(Modifier.clickable(role = Role.Button) { onOpen(next.key) }) {
@@ -247,7 +257,13 @@ private fun NextLine(next: BoardEntry, state: CalendarState, now: Instant, onOpe
         ).joinToString(" ")
         Text(whenText, style = type.detailTime, color = Hc.colors.ink)
         Text(next.title, style = type.detailStrong, color = Hc.colors.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        Words.taking(next.taking)?.let { Text(it, style = type.detailCaption, color = Hc.colors.inkMuted) }
+        val taker = (next.taking as? TakingMark.Person)?.person
+        val line = if (person != null && taker?.id == person.id && next.people.none { it.id == person.id }) {
+            stringResource(R.string.taking_them, Words.join(next.people.map { it.name }))
+        } else {
+            Words.taking(next.taking)
+        }
+        line?.let { Text(it, style = type.detailCaption, color = Hc.colors.inkMuted) }
     }
 }
 
@@ -298,12 +314,12 @@ fun DisplayMonthView(state: CalendarState, now: Instant, onOpen: (OccurrenceRef)
 private fun em(size: TextUnit): Dp = with(LocalDensity.current) { size.toDp() }
 
 private const val SECONDS_PER_MINUTE = 60L
-private const val TODAY_WEIGHT = 2f
+private const val TODAY_WEIGHT = 1.6f
 private const val DAY_COLUMN_EMS = 4.6f
 private const val DISC_EMS = 1.6f
 private const val SMALL_DISC_EMS = 0.9f
 private const val BOARD_DISC_EMS = 1.0f
-private const val ONE_LINE_EMS = 11f
+private const val ONE_LINE_EMS = 13f
 private const val HATCH_GAP = 6
 private const val DAY_NUMBER_SCALE = 0.55f
 private const val PEN_RING_EMS = 0.85f

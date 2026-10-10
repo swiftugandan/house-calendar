@@ -84,10 +84,10 @@ data class DisplayType(
             return DisplayType(
                 glanceDisplay = TextStyle(fontFamily = Fonts.bricolage, fontWeight = FontWeight(700), fontSize = glanceBricolage, lineHeight = (glanceBricolage.value * GLANCE_LINE).sp),
                 glanceText = TextStyle(fontFamily = Fonts.atkinson, fontWeight = FontWeight(700), fontSize = glance, lineHeight = glanceLine),
-                glanceTime = TextStyle(fontFamily = Fonts.mono, fontWeight = FontWeight(600), fontSize = glance, lineHeight = glanceLine),
+                glanceTime = TextStyle(fontFamily = Fonts.atkinson, fontWeight = FontWeight(700), fontSize = glance, lineHeight = glanceLine, fontFeatureSettings = "tnum"),
                 detail = TextStyle(fontFamily = Fonts.atkinson, fontWeight = FontWeight(400), fontSize = detail, lineHeight = detailLine),
                 detailStrong = TextStyle(fontFamily = Fonts.atkinson, fontWeight = FontWeight(700), fontSize = detail, lineHeight = detailLine),
-                detailTime = TextStyle(fontFamily = Fonts.mono, fontWeight = FontWeight(400), fontSize = detail, lineHeight = detailLine),
+                detailTime = TextStyle(fontFamily = Fonts.atkinson, fontWeight = FontWeight(400), fontSize = detail, lineHeight = detailLine, fontFeatureSettings = "tnum"),
                 detailCaption = TextStyle(fontFamily = Fonts.atkinson, fontWeight = FontWeight(400), fontSize = detail, lineHeight = detailLine),
                 glanceSize = glance,
                 detailSize = detail,
@@ -95,7 +95,7 @@ data class DisplayType(
         }
 
         private const val GLANCE_LINE = 1.1f
-        private const val DETAIL_LINE = 1.3f
+        private const val DETAIL_LINE = 1.2f
     }
 }
 

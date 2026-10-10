@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
@@ -157,6 +158,7 @@ fun AddSheet(graph: AppGraph, state: CalendarState, now: Instant, mode: SheetMod
         ModalBottomSheet(
             onDismissRequest = onDismiss,
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            modifier = Modifier.statusBarsPadding(),
             containerColor = Hc.colors.surface,
             shape = Radius.sheet,
         ) { content() }
@@ -259,8 +261,8 @@ private fun SheetBody(
                 ValueRow(stringResource(R.string.ends_day), LocalDateText.current.dayShort(draft.endDay)) { picking = Picker.END_DAY }
             } else {
                 Row(horizontalArrangement = Arrangement.spacedBy(Space.s)) {
-                    ValueRow(stringResource(R.string.starts), Words.time(draft.start), Modifier.weight(1f)) { picking = Picker.START }
-                    ValueRow(stringResource(R.string.ends), Words.time(draft.end) + if (draft.endDay > draft.day) " " + LocalDateText.current.weekdayShort(draft.endDay) else "", Modifier.weight(1f)) { picking = Picker.END }
+                    ValueRow(stringResource(R.string.starts), Words.time(draft.start), Modifier.weight(1f), isTime = true) { picking = Picker.START }
+                    ValueRow(stringResource(R.string.ends), Words.time(draft.end) + if (draft.endDay > draft.day) " " + LocalDateText.current.weekdayShort(draft.endDay) else "", Modifier.weight(1f), isTime = true) { picking = Picker.END }
                 }
             }
 
@@ -412,12 +414,12 @@ internal fun Chip(label: String, chosen: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
-private fun ValueRow(label: String, value: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
+private fun ValueRow(label: String, value: String, modifier: Modifier = Modifier, isTime: Boolean = false, onClick: () -> Unit) {
     Column(
         modifier.fillMaxWidth().heightIn(min = 56.dp).clip(Radius.small).background(Hc.colors.sunk).clickable(role = Role.Button, onClick = onClick).padding(horizontal = Space.m, vertical = Space.s),
     ) {
         Text(label, style = Hc.type.caption, color = Hc.colors.inkMuted)
-        Text(value, style = Hc.type.timeStrong, color = Hc.colors.ink)
+        Text(value, style = if (isTime) Hc.type.timeStrong else Hc.type.title, color = Hc.colors.ink)
     }
 }
 

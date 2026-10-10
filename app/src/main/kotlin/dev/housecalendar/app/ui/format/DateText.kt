@@ -15,6 +15,7 @@ class DateText(private val locale: Locale, is24Hour: Boolean, private val today:
     private val dayShort = DateTimeFormatter.ofPattern("EEE d MMM", locale)
     private val dayShortWithYear = DateTimeFormatter.ofPattern("EEE d MMM yyyy", locale)
     private val dayLong = DateTimeFormatter.ofPattern("EEEE d MMMM", locale)
+    private val dayLongShortMonth = DateTimeFormatter.ofPattern("EEEE d MMM", locale)
     private val weekdayShort = DateTimeFormatter.ofPattern("EEE", locale)
     private val weekdayLong = DateTimeFormatter.ofPattern("EEEE", locale)
     private val dayAndMonth = DateTimeFormatter.ofPattern("d MMM", locale)
@@ -27,6 +28,9 @@ class DateText(private val locale: Locale, is24Hour: Boolean, private val today:
 
     /** "Saturday 10 October". */
     fun dayLong(date: LocalDate): String = dayLong.format(date)
+
+    /** "Saturday 10 Oct", for where the full month doesn't fit. */
+    fun dayLongShortMonth(date: LocalDate): String = dayLongShortMonth.format(date)
 
     fun weekdayShort(date: LocalDate): String = weekdayShort.format(date)
 

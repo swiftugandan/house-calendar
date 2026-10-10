@@ -119,7 +119,11 @@ The conversion uses the screen's reported physical `xdpi`. If that is implausibl
 | `glance-small` | 7.0 mm, but with no ascenders needed | Day numbers in the Week view | Bricolage ≈ 78 px |
 | `detail` | 2.1 mm (0.2° at 0.6 m) | Everything else: entries, names in headers, labels | Atkinson ≈ 25 px; Mono ≈ 25 px |
 
-Line height is 1.3 × size for `detail` and 1.1 × size for `glance`.
+Line height is 1.2 × size for `detail` and 1.1 × size for `glance`.
+
+**Times on the display** use Atkinson Hyperlegible Next with tabular figures (`tnum`) rather than the mono face, and the clock uses Bricolage with tabular figures. At these sizes the mono face's wide advance (0.632 em) made a 12-hour "5:00 PM" take 4.4 em of a 11 em column. Tabular figures keep times aligned in a column, which was the reason for mono. *Changed after the first screenshots on the 10" emulator (2026-10-10).*
+
+**Entry lines in narrow columns.** A column narrower than 13 em puts the time on its own line above the title when every entry of the cell fits that way. Otherwise entries stay on one line with a shortened title, and "+N more" appears only when even one-line entries don't fit. Today's row is weighted ×1.6.
 
 **Fit check (10" landscape, 1280×800 px).**
 - **Vertical:** the header (date, clock and sync) takes ≈ 110 px and the people row ≈ 56 px, leaving ≈ 620 px for days.

@@ -64,8 +64,8 @@ fun AgendaRowView(row: EntryRow, onClick: () -> Unit, modifier: Modifier = Modif
     ) {
         Column(Modifier.width(TIME_COLUMN)) {
             if (row.start != null) {
-                Text(Words.time(row.start), style = type.time, color = colors.ink)
-                if (row.end != null) Text(Words.time(row.end), style = type.caption.copy(fontFamily = type.time.fontFamily), color = colors.inkMuted)
+                Text(Words.time(row.start), style = type.time, color = colors.ink, maxLines = 1, softWrap = false)
+                if (row.end != null) Text(Words.time(row.end), style = type.caption.copy(fontFamily = type.time.fontFamily), color = colors.inkMuted, maxLines = 1, softWrap = false)
             } else {
                 Text(stringResource(R.string.all_day), style = type.caption, color = colors.inkMuted)
             }
@@ -154,5 +154,5 @@ fun DayHeading(day: AgendaDay, modifier: Modifier = Modifier) {
     }
 }
 
-private val TIME_COLUMN = 64.dp
+private val TIME_COLUMN = 84.dp
 private const val ENDED_ALPHA = 0.55f
