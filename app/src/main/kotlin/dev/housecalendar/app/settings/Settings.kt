@@ -92,7 +92,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 
-enum class SettingsRoute { Index, Family, People, Holidays, Devices, Reminders, Display, Diagnostics }
+enum class SettingsRoute { Index, Family, People, Holidays, Devices, Reminders, Display, Backup, Diagnostics }
 
 /** Settings: the family's shared settings, and this device's own (SAD §3.5 `DeviceSettingsStore`). */
 @Composable
@@ -113,6 +113,7 @@ fun SettingsScreen(
         SettingsRoute.Devices -> stringResource(R.string.settings_devices)
         SettingsRoute.Reminders -> stringResource(R.string.settings_reminders)
         SettingsRoute.Display -> stringResource(R.string.settings_display)
+        SettingsRoute.Backup -> stringResource(R.string.settings_export)
         SettingsRoute.Diagnostics -> stringResource(R.string.settings_diagnostics)
     }
     Column(Modifier.fillMaxSize()) {
@@ -129,6 +130,9 @@ fun SettingsScreen(
                 SettingsRoute.Devices -> DevicesPage(graph, state, now)
                 SettingsRoute.Reminders -> RemindersPage(graph)
                 SettingsRoute.Display -> DisplayPage(graph)
+                SettingsRoute.Backup -> (graph.key.collectAsState().value as? KeyState.Held)?.let { held ->
+                    BackupPage(graph, held.family, now.atZone(state.zone).toLocalDate())
+                }
                 SettingsRoute.Diagnostics -> DiagnosticsPage(graph, state)
             }
         }
@@ -149,6 +153,7 @@ private fun Index(graph: AppGraph, state: CalendarState, onOpen: (SettingsRoute)
     if (!display) PhoneCalendarsRow(graph, state)
     if (display) LinkRow(stringResource(R.string.settings_display), HcIcons.Display) { onOpen(SettingsRoute.Display) }
     LinkRow(stringResource(R.string.recently_deleted), HcIcons.Undo, onRecentlyDeleted)
+    LinkRow(stringResource(R.string.settings_export), HcIcons.Share) { onOpen(SettingsRoute.Backup) }
     LinkRow(stringResource(R.string.settings_diagnostics), HcIcons.Notes) { onOpen(SettingsRoute.Diagnostics) }
 }
 

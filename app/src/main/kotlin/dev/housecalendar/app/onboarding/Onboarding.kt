@@ -247,11 +247,17 @@ fun JoiningFlow(graph: AppGraph) {
     val permissions = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
         if (held != null) graph.sync.startManual(graph.bluetooth, held.family, held.key, graph.deviceName())
     }
+    var restoring by remember { mutableStateOf(false) }
     Page(stringResource(R.string.joining_title), onBack = null, footer = {
         QuietButton(stringResource(R.string.joining_bluetooth), {
             permissions.launch(NearbyPermissions.required(Build.VERSION.SDK_INT).toTypedArray())
         }, Modifier.fillMaxWidth())
+        Spacer(Modifier.height(Space.s))
+        QuietButton(stringResource(R.string.joining_restore), { restoring = !restoring }, Modifier.fillMaxWidth())
     }) {
+        if (restoring && held != null) {
+            dev.housecalendar.app.settings.BackupPage(graph, held.family, graph.clock.now().atZone(ZoneId.systemDefault()).toLocalDate(), allowExport = false)
+        }
         Text(stringResource(R.string.joining_body), style = Hc.type.body, color = Hc.colors.ink)
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.m)) {
             CircularProgressIndicator(Modifier.widthIn(max = 24.dp).height(24.dp), color = Hc.colors.action, strokeWidth = 2.dp)

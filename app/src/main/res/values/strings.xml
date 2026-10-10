@@ -329,4 +329,22 @@
     <string name="import_phone_calendars_title">From this phone\'s calendars</string>
     <string name="import_phone_calendars_body">The next 8 weeks from every calendar on this phone. Untick what you don\'t want.</string>
     <string name="import_permission_body">To copy events, House Calendar needs to read this phone\'s calendars. It only reads them now, when you ask.</string>
+
+    <!-- Export and import (SPEC FR-48) -->
+    <string name="backup_body">A copy of the whole calendar in one file, locked with a passphrase. Keep it somewhere safe; you can bring it into a device of this family.</string>
+    <string name="backup_passphrase">Passphrase</string>
+    <string name="backup_passphrase_hint">At least 8 characters</string>
+    <string name="backup_export">Export to a file</string>
+    <string name="backup_import">Bring in an export file</string>
+    <string name="backup_working">Working… this takes a few seconds on purpose, to protect the passphrase.</string>
+    <string name="backup_exported">Exported.</string>
+    <plurals name="backup_imported">
+        <item quantity="one">Brought in. %1$d change was new.</item>
+        <item quantity="other">Brought in. %1$d changes were new.</item>
+    </plurals>
+    <string name="backup_wrong_passphrase">That passphrase doesn\'t open this file, or the file has been changed.</string>
+    <string name="backup_corrupt">That isn\'t a House Calendar export.</string>
+    <string name="backup_other_family">That export is from another family\'s calendar, so it can\'t be brought in here.</string>
+    <string name="backup_empty">That export is empty.</string>
+    <string name="joining_restore">Restore from an export file instead</string>
 </resources>

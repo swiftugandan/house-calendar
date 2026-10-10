@@ -171,6 +171,7 @@ fun Field(
     singleLine: Boolean = true,
     capitalize: Boolean = true,
     label: String? = null,
+    secret: Boolean = false,
 ) {
     val colors = Hc.colors
     TextField(
@@ -182,7 +183,8 @@ fun Field(
         placeholder = { Text(placeholder, style = Hc.type.body, color = colors.inkMuted) },
         textStyle = Hc.type.body.copy(color = colors.ink),
         shape = Radius.small,
-        keyboardOptions = KeyboardOptions(capitalization = if (capitalize) KeyboardCapitalization.Sentences else KeyboardCapitalization.None),
+        keyboardOptions = if (secret) KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Password) else KeyboardOptions(capitalization = if (capitalize) KeyboardCapitalization.Sentences else KeyboardCapitalization.None),
+        visualTransformation = if (secret) androidx.compose.ui.text.input.PasswordVisualTransformation() else androidx.compose.ui.text.input.VisualTransformation.None,
         colors = TextFieldDefaults.colors(
             focusedContainerColor = colors.sunk, unfocusedContainerColor = colors.sunk,
             focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent,
