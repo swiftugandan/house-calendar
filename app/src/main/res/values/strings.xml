@@ -6,6 +6,7 @@
     <string name="tomorrow">Tomorrow</string>
     <string name="all_day">All day</string>
     <string name="everyone">Everyone</string>
+    <string name="group_disc">All</string>
     <string name="now">Now</string>
     <string name="next">Next</string>
     <string name="until_time">until %1$s</string>
@@ -140,7 +141,7 @@
     <string name="scope_change_title">Change which?</string>
     <string name="scope_delete_title">Delete which?</string>
     <string name="scope_only">Only %1$s</string>
-    <string name="scope_following">%1$s and the following %2$s</string>
+    <string name="scope_following">%1$s and every %2$s after</string>
     <string name="scope_following_generic">%1$s and the ones after</string>
     <string name="scope_all">Every %1$s</string>
     <string name="scope_unavailable_move">Only this one or every time can move to another day</string>
