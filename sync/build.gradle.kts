@@ -17,5 +17,7 @@ dependencies {
     testFixturesApi(libs.kotlinx.coroutines.core)
 
     testImplementation(libs.junit)
+    // PLAN.md §3: convergence of the calendar itself, not just the op set. Tests only; :sync never depends on :schedule.
+    testImplementation(project(":schedule"))
     testImplementation(libs.kotlinx.coroutines.test)
 }
