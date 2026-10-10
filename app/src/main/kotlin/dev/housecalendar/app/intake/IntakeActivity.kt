@@ -17,6 +17,7 @@ import dev.housecalendar.intake.InsertIntent
 import dev.housecalendar.intake.IntakeResult
 import dev.housecalendar.intake.Refusal
 import dev.housecalendar.intake.SharedText
+import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -96,7 +97,7 @@ class IntakeActivity : Activity() {
     /** SPEC FR-56: reads one byte past the limit, so an oversized file is refused rather than truncated. */
     private fun readBounded(resolver: ContentResolver, uri: Uri): ByteArray? = try {
         resolver.openInputStream(uri)?.use { input ->
-            val buffer = java.io.ByteArrayOutputStream()
+            val buffer = ByteArrayOutputStream()
             val chunk = ByteArray(CHUNK_BYTES)
             while (buffer.size() <= IcsReader.MAX_BYTES) {
                 val read = input.read(chunk)

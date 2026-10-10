@@ -1,5 +1,6 @@
 package dev.housecalendar.intake
 
+import dev.housecalendar.contracts.Limits
 import dev.housecalendar.contracts.Repeat
 import dev.housecalendar.contracts.Slot
 import java.time.DayOfWeek
@@ -8,6 +9,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.Month
+import java.time.Year
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
@@ -37,11 +39,11 @@ public object InsertIntent {
             // Android's convention for all-day events: midnight UTC boundaries, end exclusive [SPEC R21].
             val first = Instant.ofEpochMilli(begin).atZone(ZoneOffset.UTC).toLocalDate()
             val last = extras.endMillis?.let { Instant.ofEpochMilli(it).atZone(ZoneOffset.UTC).toLocalDate().minusDays(1) }?.takeIf { it >= first } ?: first
-            first to Slot.AllDay((ChronoUnit.DAYS.between(first, last) + 1).toInt().coerceAtMost(dev.housecalendar.contracts.Limits.MAX_SPAN_DAYS))
+            first to Slot.AllDay((ChronoUnit.DAYS.between(first, last) + 1).toInt().coerceAtMost(Limits.MAX_SPAN_DAYS))
         } else {
             val from = Instant.ofEpochMilli(begin).atZone(zone).toLocalDateTime()
             val until = extras.endMillis?.let { Instant.ofEpochMilli(it).atZone(zone).toLocalDateTime() }?.takeIf { it > from } ?: from.plusMinutes(DEFAULT_MINUTES)
-            val offset = ChronoUnit.DAYS.between(from.toLocalDate(), until.toLocalDate()).toInt().coerceIn(0, dev.housecalendar.contracts.Limits.MAX_SPAN_DAYS - 1)
+            val offset = ChronoUnit.DAYS.between(from.toLocalDate(), until.toLocalDate()).toInt().coerceIn(0, Limits.MAX_SPAN_DAYS - 1)
             from.toLocalDate() to Slot.Timed(from.toLocalTime().truncatedTo(ChronoUnit.MINUTES), until.toLocalTime().truncatedTo(ChronoUnit.MINUTES), offset)
         }
         val rule = extras.rrule?.let { RruleMapper.map(it, day, zone) }
@@ -113,7 +115,7 @@ public object DateTimeHints {
     private fun dayOfMonth(day: Int, month: Month, today: LocalDate): LocalDate? {
         if (day !in 1..month.maxLength()) return null
         val thisYear = LocalDate.of(today.year, month, day.coerceAtMost(month.length(today.isLeapYear)))
-        return if (thisYear < today) LocalDate.of(today.year + 1, month, day.coerceAtMost(month.length(java.time.Year.isLeap(today.year + 1L)))) else thisYear
+        return if (thisYear < today) LocalDate.of(today.year + 1, month, day.coerceAtMost(month.length(Year.isLeap(today.year + 1L)))) else thisYear
     }
 
     private fun time(text: String): LocalTime? {

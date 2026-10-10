@@ -6,7 +6,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
@@ -45,6 +45,7 @@ import dev.housecalendar.app.calendar.CalendarActions
 import dev.housecalendar.app.calendar.NewMember
 import dev.housecalendar.app.model.Marks
 import dev.housecalendar.app.model.PersonMark
+import dev.housecalendar.app.settings.BackupPage
 import dev.housecalendar.app.sync.PairingCode
 import dev.housecalendar.app.sync.SyncState
 import dev.housecalendar.app.ui.components.ChoiceRow
@@ -256,7 +257,7 @@ fun JoiningFlow(graph: AppGraph) {
         QuietButton(stringResource(R.string.joining_restore), { restoring = !restoring }, Modifier.fillMaxWidth())
     }) {
         if (restoring && held != null) {
-            dev.housecalendar.app.settings.BackupPage(graph, held.family, graph.clock.now().atZone(ZoneId.systemDefault()).toLocalDate(), allowExport = false)
+            BackupPage(graph, held.family, graph.clock.now().atZone(ZoneId.systemDefault()).toLocalDate(), allowExport = false)
         }
         Text(stringResource(R.string.joining_body), style = Hc.type.body, color = Hc.colors.ink)
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.m)) {

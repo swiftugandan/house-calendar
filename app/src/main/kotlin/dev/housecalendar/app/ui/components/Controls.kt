@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -36,10 +37,13 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import dev.housecalendar.app.ui.icons.HcIcons
 import dev.housecalendar.app.ui.theme.Hc
 import dev.housecalendar.app.ui.theme.Radius
 import dev.housecalendar.app.ui.theme.Space
@@ -155,7 +159,7 @@ fun TopBar(title: String, onBack: (() -> Unit)?, modifier: Modifier = Modifier, 
         modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = Space.xs).heightIn(min = 56.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (onBack != null) IconAction(dev.housecalendar.app.ui.icons.HcIcons.Back, backLabel, onBack) else Spacer(Modifier.width(Space.m))
+        if (onBack != null) IconAction(HcIcons.Back, backLabel, onBack) else Spacer(Modifier.width(Space.m))
         Text(title, style = Hc.type.headline, color = Hc.colors.ink, modifier = Modifier.weight(1f).semantics { heading() }, maxLines = 1, overflow = TextOverflow.Ellipsis)
         actions()
     }
@@ -183,8 +187,8 @@ fun Field(
         placeholder = { Text(placeholder, style = Hc.type.body, color = colors.inkMuted) },
         textStyle = Hc.type.body.copy(color = colors.ink),
         shape = Radius.small,
-        keyboardOptions = if (secret) KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Password) else KeyboardOptions(capitalization = if (capitalize) KeyboardCapitalization.Sentences else KeyboardCapitalization.None),
-        visualTransformation = if (secret) androidx.compose.ui.text.input.PasswordVisualTransformation() else androidx.compose.ui.text.input.VisualTransformation.None,
+        keyboardOptions = if (secret) KeyboardOptions(keyboardType = KeyboardType.Password) else KeyboardOptions(capitalization = if (capitalize) KeyboardCapitalization.Sentences else KeyboardCapitalization.None),
+        visualTransformation = if (secret) PasswordVisualTransformation() else VisualTransformation.None,
         colors = TextFieldDefaults.colors(
             focusedContainerColor = colors.sunk, unfocusedContainerColor = colors.sunk,
             focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent,
@@ -233,7 +237,7 @@ fun ChoiceRow(label: String, chosen: Boolean, onClick: () -> Unit, modifier: Mod
             Text(label, style = Hc.type.title, color = colors.ink)
             if (explanation != null) Text(explanation, style = Hc.type.caption, color = colors.inkMuted)
         }
-        if (chosen) Icon(dev.housecalendar.app.ui.icons.HcIcons.Check, contentDescription = null, tint = colors.action, modifier = Modifier.size(22.dp))
+        if (chosen) Icon(HcIcons.Check, contentDescription = null, tint = colors.action, modifier = Modifier.size(22.dp))
     }
 }
 

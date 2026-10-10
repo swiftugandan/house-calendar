@@ -11,11 +11,11 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,20 +26,21 @@ import dev.housecalendar.app.R
 import dev.housecalendar.app.intake.Incoming
 import dev.housecalendar.app.model.Draft
 import dev.housecalendar.app.model.IntakeModel
-import dev.housecalendar.intake.Refusal
-import java.time.LocalDateTime
 import dev.housecalendar.app.settings.SettingsRoute
 import dev.housecalendar.app.settings.SettingsScreen
 import dev.housecalendar.contracts.EventChange
 import dev.housecalendar.contracts.EventEdit
 import dev.housecalendar.contracts.EventUpsert
 import dev.housecalendar.contracts.Payload
+import dev.housecalendar.intake.IntakeResult
+import dev.housecalendar.intake.Refusal
 import dev.housecalendar.schedule.CalendarState
 import dev.housecalendar.schedule.OccurrenceRef
 import dev.housecalendar.schedule.Plan
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 /** Where the phone is. The home screen is always at the bottom of the stack. */
 sealed interface PhoneRoute {
@@ -51,7 +52,7 @@ sealed interface PhoneRoute {
 
     data object RecentlyDeleted : PhoneRoute
 
-    data class Import(val result: dev.housecalendar.intake.IntakeResult.Drafts, val copies: Boolean) : PhoneRoute
+    data class Import(val result: IntakeResult.Drafts, val copies: Boolean) : PhoneRoute
 
     data class Settings(val page: SettingsRoute) : PhoneRoute
 }

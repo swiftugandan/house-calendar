@@ -2,6 +2,7 @@ package dev.housecalendar.app.phone
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -114,7 +115,7 @@ private fun ReviewRow(draft: IncomingDraft, ticked: Boolean, already: Boolean, o
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.m),
     ) {
         Checkbox(ticked, onCheckedChange = null, colors = CheckboxDefaults.colors(checkedColor = Hc.colors.action, checkmarkColor = Hc.colors.onAction, uncheckedColor = Hc.colors.inkMuted))
-        androidx.compose.foundation.layout.Box(Modifier.size(28.dp), contentAlignment = Alignment.Center) { EventIcon(IconSuggester.suggest(draft.title), 20.dp) }
+        Box(Modifier.size(28.dp), contentAlignment = Alignment.Center) { EventIcon(IconSuggester.suggest(draft.title), 20.dp) }
         Column(Modifier.weight(1f)) {
             Text(draft.title, style = Hc.type.title, color = Hc.colors.ink)
             Text(whenText, style = Hc.type.caption, color = Hc.colors.inkMuted)
