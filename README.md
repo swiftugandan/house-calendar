@@ -12,6 +12,14 @@ There's no account, no server and no internet. The devices sync with each other 
 
 Version 1 is complete and verified on emulators (phone and 10" tablet): events and activities, term time, lifts, reminders, sync, display mode, adding from other apps, and export. Sync over real Wi-Fi, the Bluetooth fallback, and running on the actual kitchen tablet still need physical devices. See [REVIEW.md](REVIEW.md). Screens are in [docs/screens/](docs/screens/).
 
+## Download
+
+[House Calendar for Android](https://github.com/swiftugandan/house-calendar/releases/latest/download/house-calendar.apk) (Android 9 or later), or see [the website](https://swiftugandan.github.io/house-calendar/). Releases are signed with the key whose SHA-256 certificate fingerprint is:
+
+```
+FB:7E:99:E5:2A:0A:42:5D:67:A7:54:9E:01:1B:22:25:F6:4B:B3:D6:A2:34:DB:5E:95:32:E7:15:83:BC:F8:52
+```
+
 ## How it's built
 
 Every calendar is a pure function of an append-only log of operations. Devices exchange the operations they're missing, and two devices holding the same operations always show the same calendar.
