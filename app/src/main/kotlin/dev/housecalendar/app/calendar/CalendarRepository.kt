@@ -86,6 +86,10 @@ class CalendarRepository(
         }
     }
 
+    /** A device's name as the family last set it, or blank. */
+    fun deviceName(device: DeviceId): String =
+        (snapshot.value as? CalendarSnapshot.Ready)?.state?.devices?.get(device)?.name?.value.orEmpty()
+
     /** Records payloads as new ops from this device, in one atomic append. */
     suspend fun record(payloads: List<Payload>): RecordResult {
         val opFactory = factoryOrNull() ?: return RecordResult.NoFamily
