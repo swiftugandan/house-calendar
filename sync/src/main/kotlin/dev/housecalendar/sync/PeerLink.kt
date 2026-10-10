@@ -1,10 +1,11 @@
 package dev.housecalendar.sync
 
 import dev.housecalendar.contracts.DeviceId
+import dev.housecalendar.contracts.DeviceRole
 import kotlinx.coroutines.flow.Flow
 
-/** Another phone of the family that a [PeerLink] can currently reach; [address] is link-specific. */
-public data class LinkPeer(val address: String, val device: DeviceId, val name: String)
+/** Another device of the family that a [PeerLink] can currently reach; [address] is link-specific. */
+public data class LinkPeer(val address: String, val device: DeviceId, val name: String, val role: DeviceRole)
 
 /**
  * A way of finding family phones and opening [Transport]s to them (SAD ADR-9): the local network when both
