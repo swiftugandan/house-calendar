@@ -23,7 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import dev.housecalendar.app.AppGraph
 import dev.housecalendar.app.R
-import dev.housecalendar.app.intake.Incoming
+import dev.housecalendar.app.model.Arrival
 import dev.housecalendar.app.model.Draft
 import dev.housecalendar.app.model.IntakeModel
 import dev.housecalendar.app.settings.SettingsRoute
@@ -75,17 +75,19 @@ fun PhoneRoot(graph: AppGraph, state: CalendarState, now: Instant, link: Occurre
 
     val incoming by graph.incoming.collectAsState()
     LaunchedEffect(incoming) {
-        when (val arrived = incoming) {
-            null -> return@LaunchedEffect
-            is Incoming.One -> {
+        val raw = incoming ?: return@LaunchedEffect
+        graph.takeIncoming()
+        when (val arrived = IntakeModel.resolve(raw, state.zone, LocalDateTime.ofInstant(now, state.zone))) {
+            null -> Unit
+            is Arrival.One -> {
                 val draft = IntakeModel.toDraft(arrived.draft, LocalDateTime.ofInstant(now, state.zone))
                 val note = arrived.draft.unmappableRule?.let { context.getString(R.string.import_unmappable_note, it) }
                 sheet = SheetMode.New(draft.day, prefill = draft.copy(notes = listOfNotNull(draft.notes.ifBlank { null }, note).joinToString("\n")))
             }
-            is Incoming.Many -> stack.add(PhoneRoute.Import(arrived.result, arrived.copies))
-            is Incoming.Refused -> snackbar.showSnackbar(context.getString(refusalText(arrived.reason)))
+            is Arrival.Many -> stack.add(PhoneRoute.Import(arrived.result, arrived.copies))
+            // In the screen's scope: taking the input re-keys this effect, which would cancel the message.
+            is Arrival.Refused -> scope.launch { snackbar.showSnackbar(context.getString(refusalText(arrived.reason))) }
         }
-        graph.takeIncoming()
     }
     LaunchedEffect(link) {
         if (link != null) {
